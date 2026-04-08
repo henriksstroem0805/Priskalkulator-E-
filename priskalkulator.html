@@ -1281,13 +1281,13 @@ function renderKundeOversikt(){
       h+=tStatus;
       h+='</div>';
       h+='<div style="display:flex;gap:.4rem">';
-      h+='<button class="btn btn-outline" style="font-size:.7rem;padding:.15rem .4rem" onclick="event.stopPropagation();loadTilbudFromDb(\''+t.id+'\');closeKundeOversikt()">Last inn</button>';
+      h+='<button style="font-size:.72rem;padding:.2rem .5rem;background:#4a7000;color:#fff;border:none;border-radius:4px;cursor:pointer" onclick="event.stopPropagation();loadTilbudFromDb(\''+t.id+'\');closeKundeOversikt()">Last inn</button>';
       h+='<button style="background:none;border:none;color:#c44;cursor:pointer;font-size:.85rem;padding:0 .2rem" onclick="event.stopPropagation();deleteTilbudFromDb(\''+t.id+'\',\''+escHtml(t.navn||'')+'\');renderKundeOversikt()" title="Slett">&times;</button>';
       h+='</div>';
       h+='</div>';
     });
     // Nytt tilbud-knapp
-    h+='<div style="padding:.5rem 1rem"><button class="btn btn-outline" style="font-size:.72rem;padding:.2rem .6rem;width:100%" onclick="event.stopPropagation();loadTilbudFromDb(\''+siste.id+'\');nyttTilbudForKunde()">+ Nytt tilbud for denne kunden</button></div>';
+    h+='<div style="padding:.5rem 1rem"><button style="font-size:.72rem;padding:.3rem .6rem;width:100%;background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--accent);border-radius:4px;cursor:pointer;font-weight:600" onclick="event.stopPropagation();loadTilbudFromDb(\''+siste.id+'\');nyttTilbudForKunde()">+ Nytt tilbud for denne kunden</button></div>';
     h+='</div>';
 
     h+='</div>';
