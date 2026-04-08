@@ -275,6 +275,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   <option value="custom">Egendefinert...</option>
 </select>
 <button class="btn-settings" onclick="openSettings()">⚙ Priser</button>
+<button class="btn-settings" onclick="openHjelp()" style="background:rgba(255,255,255,.12)">? Hjelp</button>
 <div class="header-meta">Prismodell 2026<br>Intern bruk</div>
 </div></div></header>
 
@@ -468,6 +469,105 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <div style="padding:.8rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.5rem;justify-content:flex-end">
 <button class="btn btn-outline" onclick="exportDatabase()" style="font-size:.78rem;padding:.3rem .7rem">⬇ Eksporter backup</button>
 <button class="btn btn-outline" onclick="$('dbImportInput').click()" style="font-size:.78rem;padding:.3rem .7rem">⬆ Importer backup</button>
+</div>
+</div></div>
+
+<!-- HJELP MODAL -->
+<div class="settings-overlay" id="hjelpModal" style="z-index:10001">
+<div class="db-panel" style="max-width:860px">
+<div class="db-toolbar"><h2>? Brukerveiledning</h2><div class="db-toolbar-btns"><button class="btn btn-outline" onclick="closeHjelp()">✕ Lukk</button></div></div>
+<div style="padding:1.5rem;overflow-y:auto;max-height:75vh;font-size:.9rem;line-height:1.6;color:var(--text)">
+
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;margin-bottom:2rem">
+<div style="background:var(--accent-light);border-radius:12px;padding:1.2rem">
+<div style="font-size:1.3rem;margin-bottom:.3rem">1️⃣</div>
+<h4 style="margin-bottom:.4rem;color:var(--accent-dark)">Velg byrå</h4>
+<p style="font-size:.82rem;color:var(--muted)">Velg ditt byrå i nedtrekkslisten øverst til venstre. Dette styrer hvilke priser og logo som brukes i tilbud.</p>
+</div>
+<div style="background:var(--accent-light);border-radius:12px;padding:1.2rem">
+<div style="font-size:1.3rem;margin-bottom:.3rem">2️⃣</div>
+<h4 style="margin-bottom:.4rem;color:var(--accent-dark)">Tilpass priser</h4>
+<p style="font-size:.82rem;color:var(--muted)">Klikk <strong>⚙ Priser</strong> for å justere timepriser og faste priser til dine satser. Endringene gjelder kun for ditt byrå.</p>
+</div>
+<div style="background:var(--accent-light);border-radius:12px;padding:1.2rem">
+<div style="font-size:1.3rem;margin-bottom:.3rem">3️⃣</div>
+<h4 style="margin-bottom:.4rem;color:var(--accent-dark)">Kopier din lenke</h4>
+<p style="font-size:.82rem;color:var(--muted)">Klikk <strong>🔗 Kopier min lenke</strong> i prisinnstillingene. Lagre denne som bokmerke — den inneholder dine priser og oppdateres automatisk.</p>
+</div>
+<div style="background:var(--accent-light);border-radius:12px;padding:1.2rem">
+<div style="font-size:1.3rem;margin-bottom:.3rem">4️⃣</div>
+<h4 style="margin-bottom:.4rem;color:var(--accent-dark)">Lag tilbud</h4>
+<p style="font-size:.82rem;color:var(--muted)">Fyll inn kundeinfo og tjenester. Tilbudet lagres automatisk. Klikk <strong>📄 Generer tilbudsark</strong> for å lage ferdig tilbud.</p>
+</div>
+</div>
+
+<h3 style="margin-bottom:.8rem;color:var(--accent-dark);border-bottom:2px solid var(--accent-light);padding-bottom:.4rem">Kundeoversikt</h3>
+<div style="background:#f8faf4;border-radius:10px;padding:1rem;margin-bottom:1.5rem">
+<p style="margin-bottom:.5rem">Når du åpner priskalkulatoren ser du en <strong>kundeoversikt</strong> med alle lagrede kunder.</p>
+<ul style="margin-left:1.2rem;margin-bottom:.3rem">
+<li><strong>Klikk på et kundekort</strong> for å laste inn tilbudet og fortsette der du slapp</li>
+<li><strong>"+ Ny kunde"</strong> starter en tom kalkulator for ny kunde</li>
+<li><strong>Søkefeltet</strong> filtrerer kunder på navn eller org.nr</li>
+<li>Statistikken øverst viser totalt antall kunder, omsetning og status</li>
+</ul>
+</div>
+
+<h3 style="margin-bottom:.8rem;color:var(--accent-dark);border-bottom:2px solid var(--accent-light);padding-bottom:.4rem">Prisinnstillinger</h3>
+<div style="background:#f8faf4;border-radius:10px;padding:1rem;margin-bottom:1.5rem">
+<p style="margin-bottom:.5rem">Under <strong>⚙ Priser</strong> kan du justere alle satser for ditt byrå:</p>
+<ul style="margin-left:1.2rem;margin-bottom:.5rem">
+<li><strong>Timepriser</strong> — regnskap, fakturering, lønn, rådgivning</li>
+<li><strong>Faste priser</strong> — MVA, årsoppgjør, kvalitetsarbeid osv.</li>
+<li><strong>Interntid</strong> — trappetrinnsmodell basert på antall bilag</li>
+<li><strong>Intern kostnad</strong> — timekostnad og overhead for dekningsgrad</li>
+</ul>
+<p><strong>Viktig:</strong> Etter prisendringer, klikk <strong>🔗 Kopier min lenke</strong> og oppdater bokmerket ditt. Dette sikrer at dine priser alltid er med i lenken.</p>
+</div>
+
+<h3 style="margin-bottom:.8rem;color:var(--accent-dark);border-bottom:2px solid var(--accent-light);padding-bottom:.4rem">Automatisk lagring</h3>
+<div style="background:#f8faf4;border-radius:10px;padding:1rem;margin-bottom:1.5rem">
+<p style="margin-bottom:.5rem">Tilbud lagres <strong>automatisk</strong> i nettleseren din mens du jobber.</p>
+<ul style="margin-left:1.2rem;margin-bottom:.5rem">
+<li>Lagring skjer automatisk når kundenavn er fylt inn</li>
+<li>Du ser <strong>"Lagret ✓"</strong> i prisoversikten når det er lagret</li>
+<li>Kunder med samme org.nr oppdateres automatisk (ingen duplikater)</li>
+</ul>
+<div style="background:#fff8e1;border-radius:8px;padding:.8rem;margin-top:.5rem">
+<strong style="color:#e8a735">⚠ Merk:</strong> Kundene lagres lokalt i nettleseren. Bruk <strong>samme nettleser og PC</strong> for å finne dem igjen. Ta jevnlig backup via <strong>⬇ Eksporter backup</strong> i kundeoversikten.
+</div>
+</div>
+
+<h3 style="margin-bottom:.8rem;color:var(--accent-dark);border-bottom:2px solid var(--accent-light);padding-bottom:.4rem">Generere tilbudsark</h3>
+<div style="background:#f8faf4;border-radius:10px;padding:1rem;margin-bottom:1.5rem">
+<ol style="margin-left:1.2rem">
+<li>Fyll inn kundeinfo, velg tjenester og juster volum</li>
+<li>Klikk <strong>📄 Generer tilbudsark</strong></li>
+<li>Rediger tilbudstekst, dato og tilbudsnummer</li>
+<li>Klikk <strong>Skriv ut / PDF</strong> for å lagre som PDF eller skrive ut</li>
+</ol>
+<p style="margin-top:.5rem">Kunden markeres som <strong style="color:#2a7000">Tilbud generert</strong> i kundeoversikten.</p>
+</div>
+
+<h3 style="margin-bottom:.8rem;color:var(--accent-dark);border-bottom:2px solid var(--accent-light);padding-bottom:.4rem">Revidere tilbud</h3>
+<div style="background:#f8faf4;border-radius:10px;padding:1rem;margin-bottom:1.5rem">
+<p>For å revidere et eksisterende tilbud (f.eks. etter 6 måneder):</p>
+<ol style="margin-left:1.2rem;margin-top:.5rem">
+<li>Åpne kundeoversikten og klikk på kunden</li>
+<li>Alle verdier lastes inn nøyaktig som de var</li>
+<li>Juster volum, tjenester eller priser etter behov</li>
+<li>Generer nytt tilbudsark — endringene lagres automatisk</li>
+</ol>
+</div>
+
+<h3 style="margin-bottom:.8rem;color:var(--accent-dark);border-bottom:2px solid var(--accent-light);padding-bottom:.4rem">Backup og overføring</h3>
+<div style="background:#f8faf4;border-radius:10px;padding:1rem;margin-bottom:.5rem">
+<ul style="margin-left:1.2rem">
+<li><strong>⬇ Eksporter backup</strong> — laster ned alle kunder som JSON-fil</li>
+<li><strong>⬆ Importer backup</strong> — laster inn kunder fra en JSON-fil</li>
+<li>Bruk dette for å overføre kunder mellom PCer eller som sikkerhetskopi</li>
+</ul>
+</div>
+
 </div>
 </div></div>
 
@@ -1046,6 +1146,10 @@ function closeDatabase(){
   $('dbModal').classList.remove('active');
   document.body.style.overflow='';
 }
+
+// === HJELP ===
+function openHjelp(){$('hjelpModal').classList.add('active');document.body.style.overflow='hidden'}
+function closeHjelp(){$('hjelpModal').classList.remove('active');document.body.style.overflow=''}
 
 // === KUNDEOVERSIKT ===
 function openKundeOversikt(){
