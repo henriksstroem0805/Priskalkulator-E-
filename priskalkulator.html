@@ -361,7 +361,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 
 <!-- SIDEBAR -->
 <div class="sidebar"><div class="summary-card">
-<div class="summary-header"><h2>Prisoversikt</h2><div class="customer-name" id="summaryKunde">Ingen kunde valgt</div></div>
+<div class="summary-header"><h2>Prisoversikt <span id="autoSaveIndicator" style="font-size:.7rem;font-weight:400;color:#90D000;opacity:0;transition:opacity .3s"></span></h2><div class="customer-name" id="summaryKunde">Ingen kunde valgt</div></div>
 <div class="summary-body">
 <div class="sum-section"><h3>Regnskap</h3><div class="sum-line" id="line-faktura"><span>Fakturering</span><span class="val">–</span></div><div class="sum-line" id="line-bilag"><span>Bilagsbehandling</span><span class="val">–</span></div><div class="sum-line" id="line-interntid"><span>Interntid</span><span class="val">–</span></div><div class="sum-line" id="line-mva"><span>MVA</span><span class="val">–</span></div><div class="sum-line" id="line-omvendtMva"><span>Omvendt MVA</span><span class="val">–</span></div><div class="sum-line" id="line-prosjekt"><span>Prosjektregnskap</span><span class="val">–</span></div><div class="sum-line" id="line-purring"><span>Purring/inkasso</span><span class="val">–</span></div></div>
 <div class="sum-section"><h3>Lønn</h3><div class="sum-line" id="line-lonnKjoring"><span>Lønnskjøring</span><span class="val">–</span></div><div class="sum-line" id="line-lonnAvst"><span>Avstemming lønn</span><span class="val">–</span></div><div class="sum-line" id="line-lonnsRapp"><span>Lønnsrapportering</span><span class="val">–</span></div><div class="sum-line" id="line-sammenstilling"><span>Sammenstilling</span><span class="val">–</span></div><div class="sum-line" id="line-ekstraKjor"><span>Ekstra kjøringer</span><span class="val">–</span></div></div>
@@ -375,7 +375,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <div class="justering-banner" id="justeringBanner"><button class="banner-close" onclick="dismissJusteringBanner()">&times;</button><span id="justeringBannerText"></span> <a onclick="openSettings()">Åpne prisjustering</a></div>
 <div class="prishistorikk-section" id="prishistorikkSection"><h3>Prishistorikk</h3><div id="prishistorikkContent"></div></div>
 <div class="sum-onetime" id="onetimeSection" style="display:none"><h3>Engangstjenester</h3><div class="sum-line" id="line-oppstart"><span>Oppstart</span><span class="val">–</span></div><div class="sum-line" id="line-protokoll"><span>Protokoll</span><span class="val">–</span></div><div class="sum-line" id="line-stiftelse"><span>Stiftelse</span><span class="val">–</span></div><div class="sum-line" id="line-avvikling"><span>Avvikling</span><span class="val">–</span></div><div class="sum-line" style="border-top:1px solid rgba(255,255,255,.12);padding-top:.3rem;margin-top:.2rem;font-weight:600" id="line-engangTotal"><span>Sum engang</span><span class="val">–</span></div></div>
-<div class="summary-actions"><button class="btn btn-primary" onclick="openTilbud()">📄 Generer tilbudsark</button><button class="btn btn-outline" onclick="exportJSON()">💾 Eksporter JSON</button><button class="btn btn-outline" onclick="saveTilbudToDb()">💾 Lagre tilbud</button><button class="btn btn-outline" onclick="openDatabase()">📋 Lagrede tilbud</button><button class="btn btn-outline" onclick="openDashboard()">📊 Dashboard</button><button class="btn btn-outline" onclick="$('jsonFileInput').click()">📂 Last inn JSON</button><button class="btn btn-outline" onclick="resetAll()">↻ Nullstill</button></div>
+<div class="summary-actions"><button class="btn btn-primary" onclick="openTilbud()">📄 Generer tilbudsark</button><button class="btn btn-outline" onclick="openKundeOversikt()">👥 Kundeoversikt</button><button class="btn btn-outline" onclick="openDashboard()">📊 Dashboard</button><button class="btn btn-outline" onclick="resetAll()">+ Ny kunde</button></div>
 </div></div>
 </div></main>
 
@@ -457,6 +457,19 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <div class="db-meta" id="dbMeta"></div>
 </div></div>
 <input type="file" id="dbImportInput" accept=".json" style="display:none">
+
+<!-- KUNDEOVERSIKT VED OPPSTART -->
+<div class="settings-overlay" id="kundeOversikt" style="z-index:10000">
+<div class="db-panel" style="max-width:800px">
+<div class="db-toolbar"><h2>👥 Velg kunde</h2><div class="db-toolbar-btns"><button class="btn btn-primary" onclick="closeKundeOversikt()" style="padding:.5rem 1.2rem;font-size:.9rem">+ Ny kunde</button></div></div>
+<div class="db-search-bar"><input type="text" id="koSearch" placeholder="Søk på kundenavn eller org.nr..." oninput="renderKundeOversikt()"></div>
+<div class="db-body" id="koBody" style="max-height:60vh"></div>
+<div class="db-meta" id="koMeta"></div>
+<div style="padding:.8rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.5rem;justify-content:flex-end">
+<button class="btn btn-outline" onclick="exportDatabase()" style="font-size:.78rem;padding:.3rem .7rem">⬇ Eksporter backup</button>
+<button class="btn btn-outline" onclick="$('dbImportInput').click()" style="font-size:.78rem;padding:.3rem .7rem">⬆ Importer backup</button>
+</div>
+</div></div>
 
 <!-- PRISSAMMENLIGNING MODAL -->
 <div class="settings-overlay" id="cmpModal">
@@ -1033,6 +1046,60 @@ function closeDatabase(){
   document.body.style.overflow='';
 }
 
+// === KUNDEOVERSIKT ===
+function openKundeOversikt(){
+  renderKundeOversikt();
+  $('kundeOversikt').classList.add('active');
+  document.body.style.overflow='hidden';
+  var s=$('koSearch');if(s){s.value='';s.focus()}
+}
+function closeKundeOversikt(){
+  $('kundeOversikt').classList.remove('active');
+  document.body.style.overflow='';
+}
+function renderKundeOversikt(){
+  var idx=getDbIndex();
+  var search=($('koSearch').value||'').toLowerCase().trim();
+  if(search){idx=idx.filter(function(e){return (e.navn||'').toLowerCase().indexOf(search)!==-1||(e.org||'').indexOf(search)!==-1})}
+  idx.sort(function(a,b){return (b.dato||'').localeCompare(a.dato||'')});
+  var el=$('koBody');
+  if(idx.length===0&&!search){
+    el.innerHTML='<div style="padding:3rem;text-align:center;color:var(--muted)"><p style="font-size:1.1rem;margin-bottom:.5rem">Ingen lagrede kunder ennå</p><p style="font-size:.85rem">Fyll inn kundeinfo og tilbudet lagres automatisk.</p></div>';
+    $('koMeta').textContent='';return;
+  }
+  if(idx.length===0&&search){
+    el.innerHTML='<div style="padding:2rem;text-align:center;color:var(--muted)">Ingen treff for "'+search+'"</div>';return;
+  }
+  var h='<table class="db-table"><thead><tr><th>Kunde</th><th>Org.nr</th><th>Mnd.pris</th><th>Sist endret</th><th></th></tr></thead><tbody>';
+  idx.forEach(function(e){
+    var dato=e.dato?e.dato:'–';
+    h+='<tr style="cursor:pointer" onclick="loadTilbudFromDb(\''+e.id+'\');closeKundeOversikt()">';
+    h+='<td><strong>'+escHtml(e.navn||'Uten navn')+'</strong></td>';
+    h+='<td>'+(e.org||'–')+'</td>';
+    h+='<td>'+fmt(e.mndPris||0)+' kr</td>';
+    h+='<td>'+dato+'</td>';
+    h+='<td style="text-align:right"><button class="btn btn-outline" style="font-size:.72rem;padding:.2rem .5rem" onclick="event.stopPropagation();deleteTilbudFromDb(\''+e.id+'\',\''+escHtml(e.navn||'')+'\');renderKundeOversikt()">Slett</button></td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  el.innerHTML=h;
+  $('koMeta').textContent=idx.length+' kunde'+(idx.length!==1?'r':'')+' lagret';
+}
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+
+// === AUTO-LAGRING ===
+var _autoSaveTimer=null;
+function autoSave(){
+  if(_autoSaveTimer)clearTimeout(_autoSaveTimer);
+  _autoSaveTimer=setTimeout(function(){
+    var kundeNavn=($('kundeNavn').value||'').trim();
+    if(!kundeNavn)return;
+    saveTilbudToDb(true);
+    var ind=$('autoSaveIndicator');
+    if(ind){ind.textContent='Lagret ✓';ind.style.opacity='1';setTimeout(function(){ind.style.opacity='0'},2000)}
+  },2000);
+}
+
 function renderDatabase(){
   var idx=getDbIndex();
   var search=($('dbSearch').value||'').toLowerCase().trim();
@@ -1440,6 +1507,7 @@ function recalc(){
      kvalMnd,kvalAarlig:chk('kvalNy')?P.kvalNy:(chk('kvalEks')?P.kvalEks:0),
      rv,sv,raadgivTimerAar,seniorTimerAar,raadgivAarlig:raadgivTimerAar*P.raadgivning,seniorAarlig:seniorTimerAar*P.seniorRaadgivning,
      mndTot,eTot,eO,eP,eS,eA,oppstartRabattPct,oppstartFull,oppstartRabattKr,rabattPct,rabattMnd,rabattKrMnd,rabattMndPris,rabattVerdi,harRabatt};
+  autoSave();
 }
 
 function fmtDate(d){if(!d)return'\u2013';return new Date(d).toLocaleDateString('nb-NO',{day:'numeric',month:'long',year:'numeric'})}
@@ -1769,5 +1837,7 @@ function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>
 loadByraaPriser($('selskapSelect').value);
 recalc();
 updateUrlFromPrices();
+// Vis kundeoversikt ved oppstart hvis det finnes lagrede kunder
+(function(){var idx=getDbIndex();if(idx.length>0)openKundeOversikt()})();
 </script>
 </body></html>
