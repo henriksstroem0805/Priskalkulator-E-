@@ -1837,7 +1837,7 @@ function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>
 loadByraaPriser($('selskapSelect').value);
 recalc();
 updateUrlFromPrices();
-// Vis kundeoversikt ved oppstart hvis det finnes lagrede kunder
-(function(){var idx=getDbIndex();if(idx.length>0)openKundeOversikt()})();
+// Vis kundeoversikt ved oppstart
+openKundeOversikt();
 </script>
 </body></html>
