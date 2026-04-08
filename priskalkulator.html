@@ -1549,7 +1549,7 @@ function recalc(){
   const omvendtMvaPris=chk('omvendtMva')?Math.ceil(P.omvendtMva/12/10)*10:0;
   const sp=chk('prosjektToggle');$('prosjektAntField').style.display=sp?'block':'none';
   const prosjPris=sp?num('prosjektAnt')*P.prosjektEnhet:0;
-  if(fakturaAnt>=1){$('purring').checked=true}else if(fakturaAnt<1){$('purring').checked=false}
+  // Purring kan velges fritt uavhengig av antall fakturaer
   const purringPris=chk('purring')?Math.ceil(P.purring/12/10)*10:0;
   const regTot=bilagPris+fakturaPris+internTidPris+mvaPris+omvendtMvaPris+prosjPris+purringPris;
   setLine('line-bilag',bilagPris);setLine('line-faktura',fakturaPris);setLine('line-interntid',internTidPris);setLine('line-mva',mvaPris);setLine('line-omvendtMva',omvendtMvaPris);setLine('line-prosjekt',prosjPris);setLine('line-purring',purringPris);
