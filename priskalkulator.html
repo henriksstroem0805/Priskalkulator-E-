@@ -382,7 +382,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <!-- SETTINGS PANEL -->
 <div class="settings-overlay" id="settingsPanel">
 <div class="settings-panel">
-<div class="settings-toolbar"><h2 id="settingsTitle">⚙ Prisinnstillinger – Eika Økonomi Askim AS</h2><div><button class="btn btn-outline" onclick="saveNewVersion()" style="padding:.4rem .8rem;font-size:.8rem;margin-right:.5rem;border-color:rgba(255,255,255,.5)" title="Last ned ny versjon med oppdaterte priser">💾 Lagre ny versjon</button><button class="btn btn-outline" onclick="copyPricesToAll()" style="padding:.4rem .8rem;font-size:.8rem;margin-right:.5rem" title="Kopier dette byråets priser til alle andre byråer">📋 Kopier til alle</button><button class="btn btn-outline" onclick="resetSettings()" style="padding:.4rem .8rem;font-size:.8rem;margin-right:.5rem">↻ Nullstill</button><button class="btn btn-outline" onclick="closeSettings()" style="padding:.4rem .8rem;font-size:.8rem">✕ Lukk</button></div></div>
+<div class="settings-toolbar"><h2 id="settingsTitle">⚙ Prisinnstillinger – Eika Økonomi Askim AS</h2><div><button class="btn btn-outline" id="btnCopyLink" onclick="copyShareLink()" style="padding:.4rem .8rem;font-size:.8rem;margin-right:.5rem;border-color:rgba(255,255,255,.5)" title="Kopier lenke med dine priser">🔗 Kopier min lenke</button><button class="btn btn-outline" onclick="copyPricesToAll()" style="padding:.4rem .8rem;font-size:.8rem;margin-right:.5rem" title="Kopier dette byråets priser til alle andre byråer">📋 Kopier til alle</button><button class="btn btn-outline" onclick="resetSettings()" style="padding:.4rem .8rem;font-size:.8rem;margin-right:.5rem">↻ Nullstill</button><button class="btn btn-outline" onclick="closeSettings()" style="padding:.4rem .8rem;font-size:.8rem">✕ Lukk</button></div></div>
 <div style="padding:.6rem 1.5rem;background:var(--accent-light);font-size:.8rem;color:var(--accent-dark);border-bottom:1px solid var(--border)">ℹ️ Du redigerer priser for <strong id="settingsByraaLabel">Eika Økonomi Askim AS</strong>. Bytt byrå i headeren for å redigere et annet byrå.</div>
 <div class="settings-body">
 <div class="settings-group"><h3>Timepriser</h3>
@@ -520,9 +520,101 @@ const BYRAA_DEFAULTS={
 // Eksempel: BYRAA_DEFAULTS.odal.timeprisLonn = 1200;
 // ===================================
 
+// === URL-BASERT PRISLAGRING ===
+function toBase64Url(str){
+  return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function fromBase64Url(b64){
+  b64=b64.replace(/-/g,'+').replace(/_/g,'/');
+  while(b64.length%4)b64+='=';
+  return decodeURIComponent(escape(atob(b64)));
+}
+function computePriceDiffs(){
+  var diffs={};
+  var byraaKeys=Object.keys(BYRAA_PRISER);
+  byraaKeys.forEach(function(b){
+    var bp=BYRAA_PRISER[b];if(!bp)return;
+    var d={};
+    Object.keys(DEFAULTS).forEach(function(k){
+      if(k==='internTidTrinn'){
+        if(JSON.stringify(bp[k])!==JSON.stringify(DEFAULTS[k]))d[k]=bp[k];
+      }else{
+        if(bp[k]!==DEFAULTS[k])d[k]=bp[k];
+      }
+    });
+    if(Object.keys(d).length>0)diffs[b]=d;
+  });
+  return diffs;
+}
+function applyUrlOverrides(){
+  try{
+    var params=new URLSearchParams(window.location.search);
+    var p=params.get('p');
+    if(!p)return;
+    var diffs=JSON.parse(fromBase64Url(p));
+    Object.keys(diffs).forEach(function(b){
+      if(!BYRAA_DEFAULTS[b])return;
+      var overrides=diffs[b];
+      Object.keys(overrides).forEach(function(k){
+        BYRAA_DEFAULTS[b][k]=overrides[k];
+      });
+    });
+  }catch(e){console.warn('Kunne ikke lese prisdata fra URL:',e)}
+}
+function updateUrlFromPrices(){
+  try{
+    var params=new URLSearchParams(window.location.search);
+    var diffs=computePriceDiffs();
+    if(Object.keys(diffs).length>0){
+      params.set('p',toBase64Url(JSON.stringify(diffs)));
+    }else{
+      params.delete('p');
+    }
+    var sel=$('selskapSelect');
+    if(sel&&sel.value&&sel.value!=='eoa'){
+      params.set('b',sel.value);
+    }else{
+      params.delete('b');
+    }
+    var qs=params.toString();
+    var newUrl=window.location.pathname+(qs?'?'+qs:'');
+    history.replaceState(null,'',newUrl);
+  }catch(e){console.warn('Kunne ikke oppdatere URL:',e)}
+}
+function copyShareLink(){
+  updateUrlFromPrices();
+  var url=window.location.href;
+  var btn=$('btnCopyLink');
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(function(){
+      if(btn){btn.textContent='✅ Lenke kopiert!';setTimeout(function(){btn.textContent='🔗 Kopier min lenke'},2000)}
+    }).catch(function(){fallbackCopy(url,btn)});
+  }else{fallbackCopy(url,btn)}
+}
+function fallbackCopy(url,btn){
+  var ta=document.createElement('textarea');ta.value=url;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');if(btn){btn.textContent='✅ Lenke kopiert!';setTimeout(function(){btn.textContent='🔗 Kopier min lenke'},2000)}}catch(e){prompt('Kopier denne lenken:',url)}
+  document.body.removeChild(ta);
+}
+// === SLUTT URL-BASERT PRISLAGRING ===
+
 // Aktive priser per byrå (lagrer endringer gjort i innstillingspanelet)
 const BYRAA_PRISER={};
 Object.keys(BYRAA_DEFAULTS).forEach(k=>BYRAA_PRISER[k]=Object.assign({},BYRAA_DEFAULTS[k]));
+applyUrlOverrides();
+// Rebuild BYRAA_PRISER from updated BYRAA_DEFAULTS
+Object.keys(BYRAA_DEFAULTS).forEach(k=>BYRAA_PRISER[k]=Object.assign({},BYRAA_DEFAULTS[k]));
+
+// Les byrå-valg fra URL
+(function(){
+  try{
+    var params=new URLSearchParams(window.location.search);
+    var b=params.get('b');
+    var sel=$('selskapSelect');
+    if(b&&BYRAA_PRISER[b]&&sel){sel.value=b;if(typeof applyTheme==='function')applyTheme(b)}
+  }catch(e){}
+})();
 let P=Object.assign({},BYRAA_PRISER[$('selskapSelect')?$('selskapSelect').value:'eoa']||DEFAULTS);
 
 // Prisjustering – globale variabler
@@ -602,7 +694,7 @@ function applyBransje(){const p=BP[$('bransjeProfil').value];if(!p||!Object.keys
 function getSelskapNavn(){const v=$('selskapSelect').value;if(v==='custom')return $('customNavn').value.trim()||'Egendefinert selskap';return SELSKAPER[v]}
 function getSelskapOrg(){const v=$('selskapSelect').value;if(v==='custom')return $('customOrgNr').value.trim()||'';return SELSKAP_ORG[v]||''}
 function applyTheme(byraa){document.body.className=SELSKAP_THEME[byraa]||''}
-function onSelskapChange(){const v=$('selskapSelect').value;$('customSelskapCard').style.display=v==='custom'?'block':'none';applyTheme(v);loadByraaPriser(v);recalc()}
+function onSelskapChange(){const v=$('selskapSelect').value;$('customSelskapCard').style.display=v==='custom'?'block':'none';applyTheme(v);loadByraaPriser(v);recalc();updateUrlFromPrices()}
 function loadByraaPriser(byraa){
   P=Object.assign({},BYRAA_PRISER[byraa]||DEFAULTS);
   // Oppdater innstillingspanelet med byråets priser
@@ -683,7 +775,7 @@ function applySettings(){
   // Lagre endringer for valgt byrå
   const byraa=$('selskapSelect').value;
   BYRAA_PRISER[byraa]=Object.assign({},P);
-  updateLabels();recalc();
+  updateLabels();recalc();updateUrlFromPrices();
 }
 function updateLabels(){
   $('timeprisRegnskap').value=P.timeprisRegnskap;
@@ -715,7 +807,7 @@ function updateLabels(){
 }
 function resetSettings(){const byraa=$('selskapSelect').value;const defs=BYRAA_DEFAULTS[byraa]||DEFAULTS;for(const k in defs){const el=$('set_'+k);if(el)el.value=defs[k]}applySettings()}
 function openSettings(){const navn=SELSKAPER[$('selskapSelect').value]||'Egendefinert';$('settingsTitle').textContent='⚙ Prisinnstillinger – '+navn;$('settingsByraaLabel').textContent=navn;$('settingsPanel').classList.add('active');document.body.style.overflow='hidden'}
-function copyPricesToAll(){const byraa=$('selskapSelect').value;const src=Object.assign({},P);Object.keys(BYRAA_PRISER).forEach(function(k){if(k!==byraa)BYRAA_PRISER[k]=Object.assign({},src)});alert('Prisene fra '+SELSKAPER[byraa]+' er kopiert til alle andre byråer.')}
+function copyPricesToAll(){const byraa=$('selskapSelect').value;const src=Object.assign({},P);Object.keys(BYRAA_PRISER).forEach(function(k){if(k!==byraa)BYRAA_PRISER[k]=Object.assign({},src)});alert('Prisene fra '+SELSKAPER[byraa]+' er kopiert til alle andre byråer.');updateUrlFromPrices()}
 function saveNewVersion(){
   // Sørg for at nåværende byrå er lagret
   applySettings();
@@ -829,6 +921,7 @@ function applyJustering(){
   $('set_justeringPct').value='';
   renderPrishistorikk();
   checkJusteringWarning();
+  updateUrlFromPrices();
 }
 
 function renderPrishistorikk(){
@@ -1675,5 +1768,6 @@ function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>
 
 loadByraaPriser($('selskapSelect').value);
 recalc();
+updateUrlFromPrices();
 </script>
 </body></html>
