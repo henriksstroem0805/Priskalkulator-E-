@@ -1778,87 +1778,144 @@ function openReadOnlyTilbud(id){
     var b=data.beregnet||{};
     var kunde=data.kunde||{};
     var tilbud=data.tilbud||{};
+    var regn=data.regnskap||{};
+    var lonn=data.lonn||{};
+    var aarsoppgjor=data.aarsoppgjor||{};
+    var kvalitet=data.kvalitet||{};
+    var engang=data.engang||{};
+    var rabatt=data.rabatt||{};
     var selskap=data.selskap||'eoa';
     var selskapNavn=SELSKAPER[selskap]||data._byraaNavn||'';
     var selskapOrg=SELSKAP_ORG[selskap]||'';
     var logoSrc=SELSKAP_LOGO[selskap]||'';
-
-    // Bygg pristabellen
-    var regTot=(d.bilagPris||0)+(d.fakturaPris||0)+(d.internTidPris||0)+(d.mvaPris||0)+(d.omvendtMvaPris||0)+(d.prosjPris||0);
-    var lonnTot=(d.lonnBasis||0)+(d.lr||0)+(d.sammenstillingMnd||0)+(d.ek||0);
-    var rows='';
-    if(regTot>0)rows+='<tr><td>Løpende regnskapsføring</td><td>'+fmt(regTot)+' kr/mnd</td></tr>';
-    if(lonnTot>0)rows+='<tr><td>Lønnsadministrasjon</td><td>'+fmt(lonnTot)+' kr/mnd</td></tr>';
-    if(d.aarsAarlig>0)rows+='<tr><td>Årsoppgjør</td><td>'+fmt(d.aarsAarlig)+' kr/år</td></tr>';
-    if(d.kvalMnd>0)rows+='<tr><td>Lovpålagt kvalitetsarbeid</td><td>'+fmt(d.kvalMnd)+' kr/mnd</td></tr>';
-    var raadTot=((data.kvalitet||{}).raadgivTimer||0)*P.raadgivning+((data.kvalitet||{}).seniorTimer||0)*P.seniorRaadgivning;
-    if((d.rv||0)+(d.sv||0)>0)rows+='<tr><td>Rådgivning</td><td>'+fmt((d.rv||0)*12+(d.sv||0)*12)+' kr/år</td></tr>';
     var mndTot=b.mndTot||d.mndTot||0;
-    var foot='<tr><td>Sum løpende pr måned</td><td>'+fmt(mndTot)+' kr/mnd</td></tr>';
-    foot+='<tr><td>Estimert årspris</td><td>'+fmt(mndTot*12)+' kr/år</td></tr>';
-    // Engang
-    var eTot=(d.eO||0)+(d.eP||0)+(d.eS||0)+(d.eA||0);
-    var engRows='';
-    if(d.eO)engRows+='<tr><td>Oppstartskostnad</td><td>'+fmt(d.eO)+' kr</td></tr>';
-    if(d.eP)engRows+='<tr><td>Protokoll, bekreftelser</td><td>'+fmt(d.eP)+' kr</td></tr>';
-    if(d.eS)engRows+='<tr><td>Stiftelse selskap</td><td>'+fmt(d.eS)+' kr</td></tr>';
-    if(d.eA)engRows+='<tr><td>Avvikling</td><td>'+fmt(d.eA)+' kr</td></tr>';
+
+    // Helper
+    function f(v){return typeof fmt==='function'?fmt(v):v}
+    function ja(v){return v==='true'||v===true?'Ja':'Nei'}
 
     var html='<!DOCTYPE html><html lang="no"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">';
-    html+='<title>Tilbud – '+(kunde.navn||'Kunde')+'</title>';
+    html+='<title>Tilbudsdetaljer – '+(kunde.navn||'Kunde')+'</title>';
     html+='<style>';
     html+='*{box-sizing:border-box;margin:0;padding:0}';
-    html+='body{font-family:"Times New Roman",Times,serif;background:#f5f8ed;padding:2rem;color:#2a3318;line-height:1.65}';
-    html+='.page{background:#fff;max-width:800px;margin:0 auto;padding:2.5rem;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.1)}';
-    html+='.banner{background:linear-gradient(135deg,#4a7000,#90D000);color:#fff;text-align:center;padding:.6rem;border-radius:8px 8px 0 0;font-size:.85rem;font-weight:600;margin:-2.5rem -2.5rem 2rem;border-radius:12px 12px 0 0}';
-    html+='.head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2.2rem;padding-bottom:1.3rem;border-bottom:2.5px solid #90D000}';
-    html+='.head h3{font-size:1.2rem;font-weight:600;color:#4a7000;margin-bottom:.15rem}.head p{font-size:.78rem;color:#6b7a56}';
-    html+='.head .meta{text-align:right;font-size:.78rem;color:#6b7a56}.head .meta strong{color:#2a3318;display:block;margin-bottom:.1rem;font-size:.85rem}';
-    html+='.recip{margin-bottom:1.8rem}.recip h4{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:#6b7a56;margin-bottom:.35rem}';
-    html+='.recip .name{font-size:1rem;font-weight:600}.recip .details{font-size:.82rem;color:#6b7a56}';
-    html+='.intro{margin-bottom:1.8rem;font-size:.86rem;color:#444;line-height:1.65;white-space:pre-line}';
-    html+='table{width:100%;border-collapse:collapse;margin-bottom:1.8rem}';
-    html+='thead th{background:#4a7000;color:#fff;padding:.6rem .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600;text-align:left}';
-    html+='thead th:last-child{text-align:right}';
-    html+='tbody td{padding:.55rem .9rem;border-bottom:1px solid #e8ebd8;font-size:.84rem}';
-    html+='tbody td:last-child{text-align:right;font-weight:500}';
-    html+='tfoot td{padding:.7rem .9rem;font-weight:700;font-size:.95rem;border-top:2.5px solid #4a7000}';
-    html+='tfoot td:last-child{text-align:right;font-size:1.05rem}';
-    html+='.vilkaar{margin-bottom:1.8rem;padding:1.1rem;background:#f4f9e8;border-radius:8px;border-left:3px solid #90D000}';
-    html+='.vilkaar h4{font-size:.8rem;font-weight:600;margin-bottom:.45rem;color:#4a7000}';
-    html+='.vilkaar ul{padding-left:1.1rem;font-size:.8rem;color:#555}.vilkaar li{margin-bottom:.25rem}';
-    html+='.sig{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:2.5rem;padding-top:1.3rem;border-top:1px solid #e8ebd8}';
-    html+='.sig h5{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:#6b7a56;margin-bottom:.25rem}';
-    html+='.sig .line{border-bottom:1px solid #2a3318;height:35px;margin-bottom:.25rem}.sig .sname{font-size:.8rem;color:#6b7a56}';
+    html+='body{font-family:system-ui,-apple-system,sans-serif;background:#f5f8ed;padding:2rem;color:#2a3318;line-height:1.6;font-size:.9rem}';
+    html+='.page{background:#fff;max-width:900px;margin:0 auto;padding:2.5rem;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.1)}';
+    html+='.banner{background:linear-gradient(135deg,#4a7000,#90D000);color:#fff;text-align:center;padding:.7rem;font-size:.85rem;font-weight:600;margin:-2.5rem -2.5rem 2rem;border-radius:12px 12px 0 0}';
+    html+='h2{font-size:1.3rem;color:#4a7000;margin-bottom:.3rem}';
+    html+='.kunde-info{margin-bottom:2rem;padding-bottom:1rem;border-bottom:2px solid #90D000}';
+    html+='.kunde-info .name{font-size:1.1rem;font-weight:700}.kunde-info .details{font-size:.85rem;color:#6b7a56;margin-top:.2rem}';
+    html+='.section{margin-bottom:1.5rem;border:1px solid #e8ebd8;border-radius:10px;overflow:hidden}';
+    html+='.section-head{background:#f4f9e8;padding:.7rem 1rem;font-weight:700;font-size:.9rem;color:#4a7000;border-bottom:1px solid #e8ebd8;display:flex;justify-content:space-between;align-items:center}';
+    html+='.section-head .total{font-size:.95rem;color:#2a3318}';
+    html+='.row{display:flex;justify-content:space-between;padding:.45rem 1rem;border-bottom:1px solid #f0f2ea;font-size:.85rem}';
+    html+='.row:last-child{border-bottom:none}';
+    html+='.row .label{color:#6b7a56}.row .val{font-weight:600}';
+    html+='.row.sub{padding-left:2rem;font-size:.82rem;color:#888}';
+    html+='.total-bar{background:linear-gradient(135deg,#4a7000,#90D000);color:#fff;padding:1rem 1.5rem;border-radius:10px;display:flex;justify-content:space-between;align-items:center;margin:1.5rem 0;font-size:1.1rem;font-weight:700}';
+    html+='.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem .8rem;font-size:.82rem;margin-top:.5rem}';
+    html+='.meta-grid .label{color:#6b7a56}.meta-grid .val{font-weight:600}';
     html+='.print-btn{position:fixed;bottom:2rem;right:2rem;background:#4a7000;color:#fff;border:none;padding:.8rem 1.5rem;border-radius:8px;font-size:.9rem;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2)}';
     html+='.print-btn:hover{background:#3a5a00}';
-    html+='@media print{.banner,.print-btn{display:none!important}body{background:#fff;padding:0}.page{box-shadow:none;padding:1.5cm;border-radius:0}thead th{background:#4a7000!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.vilkaar{background:#f4f9e8!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
+    html+='@media print{.banner,.print-btn{display:none!important}body{background:#fff;padding:0}.page{box-shadow:none;padding:1.5cm;border-radius:0}.section-head{background:#f4f9e8!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.total-bar{background:#4a7000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
     html+='</style></head><body>';
     html+='<div class="page">';
-    html+='<div class="banner">Skrivebeskyttet tilbudsvisning — '+(data._savedDate?new Date(data._savedDate).toLocaleDateString('nb-NO'):'')+'</div>';
-    // Logo
-    if(logoSrc)html+='<div style="text-align:center;margin-bottom:1.5rem"><img src="'+logoSrc+'" alt="'+selskapNavn+'" style="max-width:220px;height:auto"></div>';
-    // Header
-    html+='<div class="head"><div><h3>'+selskapNavn+'</h3>'+(selskapOrg?'<p>Org.nr: '+selskapOrg+'</p>':'')+'<p>Autorisert regnskapsførerselskap</p></div>';
-    html+='<div class="meta"><strong>TILBUD</strong>'+(tilbud.nr||'')+'<br>'+(tilbud.dato?new Date(tilbud.dato+'T00:00').toLocaleDateString('nb-NO'):'')+'<br>Gyldig til: '+(tilbud.gyldig?new Date(tilbud.gyldig+'T00:00').toLocaleDateString('nb-NO'):'')+'</div></div>';
-    // Kunde
-    html+='<div class="recip"><h4>Tilbud til</h4><div class="name">'+(kunde.navn||'–')+'</div><div class="details">'+(kunde.org?'Org.nr: '+kunde.org+'<br>':'')+(kunde.kontakt?'Att: '+kunde.kontakt:'')+'</div></div>';
-    // Intro
-    if(tilbud.intro)html+='<div class="intro">'+tilbud.intro+'</div>';
-    // Pristabell
-    html+='<table><thead><tr><th style="width:55%">Tjeneste</th><th style="text-align:right">Pris</th></tr></thead><tbody>'+rows+'</tbody><tfoot>'+foot+'</tfoot></table>';
-    // Engang
-    if(eTot>0){
-      html+='<table><thead><tr><th style="width:55%">Engangstjenester</th><th style="text-align:right">Pris</th></tr></thead><tbody>'+engRows+'</tbody><tfoot><tr><td>Sum engang</td><td>'+fmt(eTot)+' kr</td></tr></tfoot></table>';
+    html+='<div class="banner">Skrivebeskyttet tilbudsdetaljer — Lagret '+(data._savedDate?new Date(data._savedDate).toLocaleDateString('nb-NO'):'')+'</div>';
+
+    // Kunde-header
+    html+='<div class="kunde-info">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:start">';
+    html+='<div><div class="name">'+(kunde.navn||'–')+'</div><div class="details">'+(kunde.org?'Org.nr: '+kunde.org:'')+(kunde.kontakt?' · Kontakt: '+kunde.kontakt:'')+'</div></div>';
+    html+='<div style="text-align:right;font-size:.82rem;color:#6b7a56">'+(selskapNavn)+'<br>'+(tilbud.nr?'Tilbud '+tilbud.nr:'')+(tilbud.dato?'<br>'+tilbud.dato:'')+'</div>';
+    html+='</div></div>';
+
+    // Total-bar
+    html+='<div class="total-bar"><span>Sum pr måned</span><span>'+f(mndTot)+' kr/mnd</span></div>';
+
+    // Regnskap
+    var regTot=(d.bilagPris||0)+(d.fakturaPris||0)+(d.internTidPris||0)+(d.mvaPris||0)+(d.omvendtMvaPris||0)+(d.prosjPris||0)+(d.purringPris||0);
+    html+='<div class="section"><div class="section-head"><span>Regnskap</span><span class="total">'+f(regTot)+' kr/mnd</span></div>';
+    html+='<div class="row"><span class="label">Antall fakturaer / mnd</span><span class="val">'+(regn.fakturaMnd||0)+'</span></div>';
+    html+='<div class="row"><span class="label">Minutter pr faktura</span><span class="val">'+(regn.minPrFaktura||0)+'</span></div>';
+    if(d.fakturaPris>0)html+='<div class="row sub"><span class="label">→ Fakturering</span><span class="val">'+f(d.fakturaPris)+' kr/mnd</span></div>';
+    html+='<div class="row"><span class="label">Antall bilag / mnd</span><span class="val">'+(regn.bilagMnd||0)+'</span></div>';
+    html+='<div class="row"><span class="label">Minutter pr bilag</span><span class="val">'+(regn.minPrBilag||0)+'</span></div>';
+    if(d.bilagPris>0)html+='<div class="row sub"><span class="label">→ Bilagsbehandling</span><span class="val">'+f(d.bilagPris)+' kr/mnd</span></div>';
+    if(d.internTidPris>0)html+='<div class="row sub"><span class="label">→ Interntid</span><span class="val">'+f(d.internTidPris)+' kr/mnd</span></div>';
+    if(d.mvaPris>0)html+='<div class="row"><span class="label">MVA</span><span class="val">'+f(d.mvaPris)+' kr/mnd</span></div>';
+    if(d.omvendtMvaPris>0)html+='<div class="row"><span class="label">Omvendt MVA</span><span class="val">'+f(d.omvendtMvaPris)+' kr/mnd</span></div>';
+    if(d.prosjPris>0)html+='<div class="row"><span class="label">Prosjektregnskap</span><span class="val">'+f(d.prosjPris)+' kr/mnd</span></div>';
+    if(d.purringPris>0)html+='<div class="row"><span class="label">Purring/inkasso</span><span class="val">'+f(d.purringPris)+' kr/mnd</span></div>';
+    html+='</div>';
+
+    // Lønn
+    var lonnTot=(d.lonnBasis||0)+(d.lr||0)+(d.sammenstillingMnd||0)+(d.ek||0);
+    if(lonnTot>0||parseInt(lonn.antAnsatte)>0){
+      html+='<div class="section"><div class="section-head"><span>Lønn</span><span class="total">'+f(lonnTot)+' kr/mnd</span></div>';
+      html+='<div class="row"><span class="label">Antall ansatte</span><span class="val">'+(lonn.antAnsatte||0)+'</span></div>';
+      if(d.lonnBasis>0)html+='<div class="row sub"><span class="label">→ Lønnskjøring + avstemming</span><span class="val">'+f(d.lonnBasis)+' kr/mnd</span></div>';
+      if(d.lr>0)html+='<div class="row"><span class="label">Lønnsrapportering</span><span class="val">'+f(d.lr)+' kr/mnd</span></div>';
+      if(d.sammenstillingMnd>0)html+='<div class="row"><span class="label">Sammenstilling</span><span class="val">'+f(d.sammenstillingMnd)+' kr/mnd</span></div>';
+      if(d.ek>0)html+='<div class="row"><span class="label">Ekstra lønnskjøringer</span><span class="val">'+f(d.ek)+' kr/mnd</span></div>';
+      html+='</div>';
     }
-    // Vilkår (hent fra DOM)
-    var vilkaarEl=document.querySelectorAll('.tb-vilkaar');
-    vilkaarEl.forEach(function(v){html+='<div class="vilkaar">'+v.innerHTML+'</div>'});
-    // Ekstra vilkår
-    if(tilbud.ekstra)html+='<p style="font-size:.8rem;color:#555;margin-bottom:1rem">'+tilbud.ekstra+'</p>';
-    // Signatur
-    html+='<div class="sig"><div><h5>For '+selskapNavn+'</h5><div class="line"></div><div class="sname">'+(tilbud.utarbeidet||'Sted / Dato')+'</div></div>';
-    html+='<div><h5>For '+(kunde.navn||'Kunde')+'</h5><div class="line"></div><div class="sname">Sted / Dato</div></div></div>';
+
+    // Årsoppgjør
+    var aarsAarlig=d.aarsAarlig||0;
+    if(aarsAarlig>0){
+      html+='<div class="section"><div class="section-head"><span>Årsoppgjør & rapportering</span><span class="total">'+f(aarsAarlig)+' kr/år</span></div>';
+      if(aarsoppgjor.aarsoppgjorAS==='true'||aarsoppgjor.aarsoppgjorAS===true)html+='<div class="row"><span class="label">Årsoppgjør AS</span><span class="val">Ja</span></div>';
+      if(aarsoppgjor.skattemeldingEPF==='true'||aarsoppgjor.skattemeldingEPF===true)html+='<div class="row"><span class="label">Skattemelding EPF</span><span class="val">Ja</span></div>';
+      if(aarsoppgjor.holdingselskap==='true'||aarsoppgjor.holdingselskap===true)html+='<div class="row"><span class="label">Holdingselskap</span><span class="val">Ja</span></div>';
+      if(aarsoppgjor.aksjonaerReg==='true'||aarsoppgjor.aksjonaerReg===true)html+='<div class="row"><span class="label">Aksjonærregisteroppgave</span><span class="val">Ja</span></div>';
+      if(aarsoppgjor.periodeAar==='true'||aarsoppgjor.periodeAar===true)html+='<div class="row"><span class="label">Systemkostnader</span><span class="val">Ja</span></div>';
+      if(aarsoppgjor.sameieOppgave==='true'||aarsoppgjor.sameieOppgave===true)html+='<div class="row"><span class="label">Sameie oppgave</span><span class="val">Ja</span></div>';
+      if(aarsoppgjor.periodiskRapp==='true'||aarsoppgjor.periodiskRapp===true)html+='<div class="row"><span class="label">Periodisk rapportering</span><span class="val">Ja</span></div>';
+      html+='</div>';
+    }
+
+    // Kvalitet & Rådgivning
+    var kvalTot=(d.kvalMnd||0)+(d.rv||0)+(d.sv||0);
+    if(kvalTot>0){
+      html+='<div class="section"><div class="section-head"><span>Kvalitet & Rådgivning</span><span class="total">'+f(kvalTot)+' kr/mnd</span></div>';
+      if(d.kvalMnd>0)html+='<div class="row"><span class="label">Kvalitetsarbeid</span><span class="val">'+f(d.kvalMnd)+' kr/mnd</span></div>';
+      if(kvalitet.raadgivTimer>0)html+='<div class="row"><span class="label">Rådgivningstimer / år</span><span class="val">'+kvalitet.raadgivTimer+' t</span></div>';
+      if(d.rv>0)html+='<div class="row sub"><span class="label">→ Rådgivning</span><span class="val">'+f(d.rv)+' kr/mnd</span></div>';
+      if(kvalitet.seniorTimer>0)html+='<div class="row"><span class="label">Seniorrådgivning / år</span><span class="val">'+kvalitet.seniorTimer+' t</span></div>';
+      if(d.sv>0)html+='<div class="row sub"><span class="label">→ Seniorrådgivning</span><span class="val">'+f(d.sv)+' kr/mnd</span></div>';
+      html+='</div>';
+    }
+
+    // Engang
+    var eTot=(d.eO||0)+(d.eP||0)+(d.eS||0)+(d.eA||0);
+    if(eTot>0){
+      html+='<div class="section"><div class="section-head"><span>Engangstjenester</span><span class="total">'+f(eTot)+' kr</span></div>';
+      if(d.eO>0)html+='<div class="row"><span class="label">Oppstartskostnad</span><span class="val">'+f(d.eO)+' kr</span></div>';
+      if(d.eP>0)html+='<div class="row"><span class="label">Protokoll, bekreftelser</span><span class="val">'+f(d.eP)+' kr</span></div>';
+      if(d.eS>0)html+='<div class="row"><span class="label">Stiftelse selskap</span><span class="val">'+f(d.eS)+' kr</span></div>';
+      if(d.eA>0)html+='<div class="row"><span class="label">Avvikling</span><span class="val">'+f(d.eA)+' kr</span></div>';
+      html+='</div>';
+    }
+
+    // Rabatt
+    if(b.harRabatt){
+      html+='<div class="section"><div class="section-head"><span>Rabatt</span></div>';
+      html+='<div class="row"><span class="label">Rabattprosent</span><span class="val">'+(rabatt.rabattPct||0)+' %</span></div>';
+      html+='<div class="row"><span class="label">Rabattperiode</span><span class="val">'+(rabatt.rabattMnd||0)+' mnd</span></div>';
+      html+='<div class="row"><span class="label">Total rabattverdi</span><span class="val">−'+f(b.rabattVerdi||0)+' kr</span></div>';
+      html+='</div>';
+    }
+
+    // Oppsummering
+    html+='<div class="total-bar"><span>Estimert årspris</span><span>'+f(mndTot*12)+' kr/år</span></div>';
+
+    // Kundedetaljer
+    html+='<div class="section"><div class="section-head"><span>Kundedetaljer</span></div>';
+    html+='<div class="row"><span class="label">Selskapstype</span><span class="val">'+(kunde.selskapstype||'–')+'</span></div>';
+    if(kunde.asType)html+='<div class="row"><span class="label">Type AS</span><span class="val">'+(kunde.asType==='holding'?'Holdingselskap':'Driftsselskap')+'</span></div>';
+    if(kunde.bransjeProfil)html+='<div class="row"><span class="label">Bransjeprofil</span><span class="val">'+kunde.bransjeProfil+'</span></div>';
+    html+='<div class="row"><span class="label">Byrå</span><span class="val">'+selskapNavn+'</span></div>';
+    html+='</div>';
+
     html+='</div>';
     html+='<button class="print-btn" onclick="window.print()">🖨 Skriv ut / PDF</button>';
     html+='</body></html>';
