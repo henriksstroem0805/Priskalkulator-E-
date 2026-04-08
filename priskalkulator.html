@@ -1085,6 +1085,7 @@ function dismissJusteringBanner(){$('justeringBanner').classList.remove('active'
 // === TILBUDSDATABASE (localStorage) ===
 var DB_PREFIX='tilbud_';
 var DB_INDEX_KEY='tilbud_index';
+window._aktivTilbudId=null;
 
 function generateTilbudId(){return 't_'+Date.now()+'_'+Math.random().toString(36).substr(2,4)}
 
@@ -1098,10 +1099,12 @@ function saveTilbudToDb(silent){
   var kundeNavn=($('kundeNavn').value||'').trim();
   var kundeOrg=($('kundeOrg').value||'').trim();
   if(!kundeNavn&&!silent){alert('Fyll inn kundenavn før du lagrer.');return}
+  if(!kundeNavn)return;
   var idx=getDbIndex();
-  // Sjekk om det finnes et eksisterende tilbud for samme kunde (org.nr match)
-  var existing=kundeOrg?idx.find(function(e){return e.org===kundeOrg}):null;
-  var id=existing?existing.id:generateTilbudId();
+  // Bruk aktivt tilbud-ID eller generer nytt
+  var id=window._aktivTilbudId;
+  var existing=id?idx.find(function(e){return e.id===id}):null;
+  if(!id){id=generateTilbudId();window._aktivTilbudId=id}
   var byraaNavn=SELSKAPER[$('selskapSelect').value]||'Egendefinert';
   // Lagre data
   data._id=id;
@@ -1125,6 +1128,7 @@ function loadTilbudFromDb(id){
     var raw=localStorage.getItem(DB_PREFIX+id);
     if(!raw){alert('Tilbudet ble ikke funnet.');return}
     var data=JSON.parse(raw);
+    window._aktivTilbudId=id;
     loadFromJSON(data);
     closeDatabase();
   }catch(e){alert('Feil ved lasting av tilbud: '+e.message)}
@@ -1151,6 +1155,26 @@ function closeDatabase(){
   document.body.style.overflow='';
 }
 
+// === NYTT TILBUD FOR KUNDE ===
+function nyttTilbudForKunde(){
+  // Beholder kundeinfo men nullstiller tilbud-ID
+  window._aktivTilbudId=null;
+  window._tilbudGenerert=false;
+  // Behold kundeinfo
+  var navn=$('kundeNavn').value;
+  var org=$('kundeOrg').value;
+  var kontakt=$('kundeKontakt')?$('kundeKontakt').value:'';
+  var profil=$('bransjeProfil')?$('bransjeProfil').value:'';
+  // Nullstill tilbudsfelter
+  $('tilbudDato').value='';$('tilbudGyldig').value='';$('tilbudNr').value='';
+  if($('tilbudIntro')){$('tilbudIntro').value='';$('tilbudIntro').dataset.auto='1'}
+  if($('tilbudEkstra'))$('tilbudEkstra').value='';
+  // Prishistorikk starter på nytt for dette tilbudet
+  prishistorikk=[];sisteJustering=null;renderPrishistorikk();
+  recalc();
+  closeKundeOversikt();
+}
+
 // === HJELP ===
 function openHjelp(){$('hjelpModal').classList.add('active');document.body.style.overflow='hidden'}
 function closeHjelp(){$('hjelpModal').classList.remove('active');document.body.style.overflow=''}
@@ -1171,17 +1195,38 @@ function renderKundeOversikt(){
   var search=($('koSearch').value||'').toLowerCase().trim();
   var idx=allIdx;
   if(search){idx=idx.filter(function(e){return (e.navn||'').toLowerCase().indexOf(search)!==-1||(e.org||'').indexOf(search)!==-1})}
-  idx.sort(function(a,b){return (b.dato||'').localeCompare(a.dato||'')});
+
+  // Grupper tilbud per kunde (org.nr eller navn)
+  var grupper={};
+  idx.forEach(function(e){
+    var key=e.org||e.navn||'ukjent';
+    if(!grupper[key])grupper[key]={navn:e.navn,org:e.org,tilbud:[]};
+    grupper[key].tilbud.push(e);
+    // Oppdater kundenavn til nyeste
+    if(!grupper[key].navn||e.dato>=(grupper[key]._sisteDato||''))
+      {grupper[key].navn=e.navn;grupper[key]._sisteDato=e.dato}
+  });
+  // Sorter tilbud innen hver gruppe nyeste først
+  var kundeKeys=Object.keys(grupper);
+  kundeKeys.forEach(function(k){grupper[k].tilbud.sort(function(a,b){return (b.dato||'').localeCompare(a.dato||'')})});
+  // Sorter kunder etter siste tilbudsdato
+  kundeKeys.sort(function(a,b){
+    var da=grupper[a].tilbud[0]?grupper[a].tilbud[0].dato:'';
+    var db=grupper[b].tilbud[0]?grupper[b].tilbud[0].dato:'';
+    return db.localeCompare(da);
+  });
+
   var el=$('koBody');
 
   // Statistikk
-  var totalKunder=allIdx.length;
+  var totalKunder=kundeKeys.length;
+  var totalTilbud=allIdx.length;
   var totalMnd=0;var generert=0;var underArbeid=0;
-  allIdx.forEach(function(e){totalMnd+=(e.mndPris||0);if(e.tilbudGenerert)generert++;else underArbeid++});
-  var totalAar=totalMnd*12;
+  // Bruk siste tilbud per kunde for total mnd
+  kundeKeys.forEach(function(k){var siste=grupper[k].tilbud[0];if(siste)totalMnd+=(siste.mndPris||0)});
+  allIdx.forEach(function(e){if(e.tilbudGenerert)generert++;else underArbeid++});
 
   var h='';
-  // Statistikkort
   h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;padding:1rem 1.2rem;border-bottom:1px solid var(--border)">';
   h+='<div style="background:var(--accent-light);border-radius:10px;padding:.8rem 1rem;text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--accent-dark)">'+totalKunder+'</div><div style="font-size:.75rem;color:var(--muted)">Kunder</div></div>';
   h+='<div style="background:var(--accent-light);border-radius:10px;padding:.8rem 1rem;text-align:center"><div style="font-size:1.1rem;font-weight:700;color:var(--accent-dark)">'+fmt(totalMnd)+'</div><div style="font-size:.75rem;color:var(--muted)">kr/mnd totalt</div></div>';
@@ -1189,38 +1234,67 @@ function renderKundeOversikt(){
   h+='<div style="background:#fff8e1;border-radius:10px;padding:.8rem 1rem;text-align:center"><div style="font-size:1.5rem;font-weight:700;color:#e8a735">'+underArbeid+'</div><div style="font-size:.75rem;color:var(--muted)">Under arbeid</div></div>';
   h+='</div>';
 
-  if(idx.length===0&&!search){
+  if(kundeKeys.length===0&&!search){
     h+='<div style="padding:3rem;text-align:center;color:var(--muted)"><p style="font-size:1.1rem;margin-bottom:.5rem">Ingen lagrede kunder ennå</p><p style="font-size:.85rem">Fyll inn kundeinfo og tilbudet lagres automatisk.</p></div>';
     el.innerHTML=h;$('koMeta').textContent='';return;
   }
-  if(idx.length===0&&search){
+  if(kundeKeys.length===0&&search){
     h+='<div style="padding:2rem;text-align:center;color:var(--muted)">Ingen treff for "'+search+'"</div>';
     el.innerHTML=h;return;
   }
 
   // Kundekort i rutenett
-  h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.8rem;padding:1rem 1.2rem">';
-  idx.forEach(function(e){
-    var dato=e.dato?e.dato:'–';
-    var statusColor=e.tilbudGenerert?'#2a7000':'#e8a735';
-    var statusText=e.tilbudGenerert?'Tilbud generert':'Under arbeid';
-    var statusBg=e.tilbudGenerert?'#e8f5e9':'#fff8e1';
-    h+='<div onclick="loadTilbudFromDb(\''+e.id+'\');closeKundeOversikt()" style="cursor:pointer;background:#fff;border:1px solid var(--border);border-radius:10px;padding:1rem;transition:box-shadow .2s,transform .1s;position:relative" onmouseover="this.style.boxShadow=\'0 4px 12px rgba(0,0,0,.1)\';this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.boxShadow=\'none\';this.style.transform=\'none\'">';
-    h+='<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.5rem">';
-    h+='<strong style="font-size:.95rem;color:var(--text)">'+escHtml(e.navn||'Uten navn')+'</strong>';
-    h+='<button style="background:none;border:none;color:#c44;cursor:pointer;font-size:.9rem;padding:0;line-height:1" onclick="event.stopPropagation();deleteTilbudFromDb(\''+e.id+'\',\''+escHtml(e.navn||'')+'\');renderKundeOversikt()" title="Slett">&times;</button>';
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.8rem;padding:1rem 1.2rem">';
+  kundeKeys.forEach(function(k){
+    var g=grupper[k];
+    var siste=g.tilbud[0];
+    var antall=g.tilbud.length;
+    var statusColor=siste.tilbudGenerert?'#2a7000':'#e8a735';
+    var statusText=siste.tilbudGenerert?'Tilbud generert':'Under arbeid';
+    var statusBg=siste.tilbudGenerert?'#e8f5e9':'#fff8e1';
+    var cardId='kunde_'+k.replace(/[^a-zA-Z0-9]/g,'_');
+
+    h+='<div style="background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:box-shadow .2s" onmouseover="this.style.boxShadow=\'0 4px 12px rgba(0,0,0,.1)\'" onmouseout="this.style.boxShadow=\'none\'">';
+
+    // Kundekort-header (alltid synlig)
+    h+='<div style="padding:1rem;cursor:pointer" onclick="var el=document.getElementById(\''+cardId+'\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.4rem">';
+    h+='<strong style="font-size:.95rem;color:var(--text)">'+escHtml(g.navn||'Uten navn')+'</strong>';
+    h+='<span style="font-size:.72rem;background:var(--accent-light);color:var(--accent-dark);padding:.15rem .4rem;border-radius:4px;font-weight:600">'+antall+' tilbud</span>';
     h+='</div>';
-    h+='<div style="font-size:.78rem;color:var(--muted);margin-bottom:.6rem">'+(e.org||'Ingen org.nr')+'</div>';
-    h+='<div style="font-size:1.15rem;font-weight:700;color:var(--accent-dark);margin-bottom:.5rem">'+fmt(e.mndPris||0)+' kr/mnd</div>';
+    h+='<div style="font-size:.78rem;color:var(--muted);margin-bottom:.5rem">'+(g.org||'Ingen org.nr')+'</div>';
+    h+='<div style="font-size:1.15rem;font-weight:700;color:var(--accent-dark);margin-bottom:.4rem">'+fmt(siste.mndPris||0)+' kr/mnd</div>';
     h+='<div style="display:flex;justify-content:space-between;align-items:center">';
     h+='<span style="font-size:.72rem;padding:.2rem .5rem;border-radius:4px;background:'+statusBg+';color:'+statusColor+';font-weight:600">'+statusText+'</span>';
-    h+='<span style="font-size:.72rem;color:var(--muted)">'+dato+'</span>';
+    h+='<span style="font-size:.72rem;color:var(--muted)">Sist: '+(siste.dato||'–')+'</span>';
     h+='</div>';
+    h+='</div>';
+
+    // Tilbudsliste (ekspanderbar)
+    h+='<div id="'+cardId+'" style="display:none;border-top:1px solid var(--border);background:#fafcf6">';
+    g.tilbud.forEach(function(t){
+      var tStatus=t.tilbudGenerert?'<span style="color:#2a7000;font-size:.72rem">Generert</span>':'<span style="color:#e8a735;font-size:.72rem">Under arbeid</span>';
+      h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;border-bottom:1px solid rgba(0,0,0,.05);font-size:.85rem">';
+      h+='<div style="display:flex;align-items:center;gap:.8rem">';
+      h+='<span style="color:var(--muted);min-width:80px">'+(t.dato||'–')+'</span>';
+      h+='<strong>'+fmt(t.mndPris||0)+' kr/mnd</strong>';
+      h+=tStatus;
+      h+='</div>';
+      h+='<div style="display:flex;gap:.4rem">';
+      h+='<button class="btn btn-outline" style="font-size:.7rem;padding:.15rem .4rem" onclick="event.stopPropagation();loadTilbudFromDb(\''+t.id+'\');closeKundeOversikt()">Last inn</button>';
+      h+='<button style="background:none;border:none;color:#c44;cursor:pointer;font-size:.85rem;padding:0 .2rem" onclick="event.stopPropagation();deleteTilbudFromDb(\''+t.id+'\',\''+escHtml(t.navn||'')+'\');renderKundeOversikt()" title="Slett">&times;</button>';
+      h+='</div>';
+      h+='</div>';
+    });
+    // Nytt tilbud-knapp
+    h+='<div style="padding:.5rem 1rem"><button class="btn btn-outline" style="font-size:.72rem;padding:.2rem .6rem;width:100%" onclick="event.stopPropagation();loadTilbudFromDb(\''+siste.id+'\');nyttTilbudForKunde()">+ Nytt tilbud for denne kunden</button></div>';
+    h+='</div>';
+
     h+='</div>';
   });
   h+='</div>';
   el.innerHTML=h;
-  $('koMeta').textContent='';
+  $('koMeta').textContent=totalKunder+' kunde'+(totalKunder!==1?'r':'')+' · '+totalTilbud+' tilbud totalt';
 }
 function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 
@@ -1689,7 +1763,7 @@ function renderTilbud(){
   }else{$('tbEngWrap').style.display='none'}
 }
 
-function resetAll(){window._tilbudGenerert=false;document.querySelectorAll('input[type="number"]').forEach(function(e){e.value=e.id==='minPrBilag'?'4':e.id==='timeprisRegnskap'?P.timeprisRegnskap:e.defaultValue||'0'});document.querySelectorAll('input[type="checkbox"]').forEach(function(e){e.checked=false});document.querySelectorAll('input[type="text"],input[type="date"],textarea').forEach(function(e){e.value=''});document.querySelectorAll('select').forEach(function(e){e.selectedIndex=0});$('oppstartRabatt').value=0;$('prosjektAntField').style.display='none';$('oppstartRabattField').style.display='none';$('customSelskapCard').style.display='none';$('lonnCalcBox').style.display='none';prishistorikk=[];sisteJustering=null;renderPrishistorikk();$('justeringBanner').classList.remove('active','warn-yellow','warn-red');loadByraaPriser($('selskapSelect').value);recalc()}
+function resetAll(){window._tilbudGenerert=false;window._aktivTilbudId=null;document.querySelectorAll('input[type="number"]').forEach(function(e){e.value=e.id==='minPrBilag'?'4':e.id==='timeprisRegnskap'?P.timeprisRegnskap:e.defaultValue||'0'});document.querySelectorAll('input[type="checkbox"]').forEach(function(e){e.checked=false});document.querySelectorAll('input[type="text"],input[type="date"],textarea').forEach(function(e){e.value=''});document.querySelectorAll('select').forEach(function(e){e.selectedIndex=0});$('oppstartRabatt').value=0;$('prosjektAntField').style.display='none';$('oppstartRabattField').style.display='none';$('customSelskapCard').style.display='none';$('lonnCalcBox').style.display='none';prishistorikk=[];sisteJustering=null;renderPrishistorikk();$('justeringBanner').classList.remove('active','warn-yellow','warn-red');loadByraaPriser($('selskapSelect').value);recalc()}
 
 // Close modals with overlay click / Escape
 $('settingsPanel').addEventListener('click',function(e){if(e.target===this)closeSettings()});
