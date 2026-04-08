@@ -1007,9 +1007,10 @@ function saveTilbudToDb(silent){
   data._mndPris=S.mndTot||0;
   data._byraa=$('selskapSelect').value;
   data._byraaNavn=byraaNavn;
+  data._tilbudGenerert=!!window._tilbudGenerert;
   try{localStorage.setItem(DB_PREFIX+id,JSON.stringify(data))}catch(e){alert('Kunne ikke lagre — localStorage er fullt.');return}
   // Oppdater indeks
-  var idxEntry={id:id,navn:kundeNavn,org:kundeOrg,mndPris:S.mndTot||0,byraa:$('selskapSelect').value,byraaNavn:byraaNavn,dato:new Date().toISOString().slice(0,10)};
+  var idxEntry={id:id,navn:kundeNavn,org:kundeOrg,mndPris:S.mndTot||0,byraa:$('selskapSelect').value,byraaNavn:byraaNavn,dato:new Date().toISOString().slice(0,10),tilbudGenerert:!!window._tilbudGenerert};
   if(existing){var i=idx.indexOf(existing);idx[i]=idxEntry}else{idx.push(idxEntry)}
   saveDbIndex(idx);
   if(!silent)alert('Tilbud lagret for '+kundeNavn);
@@ -1070,15 +1071,17 @@ function renderKundeOversikt(){
   if(idx.length===0&&search){
     el.innerHTML='<div style="padding:2rem;text-align:center;color:var(--muted)">Ingen treff for "'+search+'"</div>';return;
   }
-  var h='<table class="db-table"><thead><tr><th>Kunde</th><th>Org.nr</th><th>Mnd.pris</th><th>Sist endret</th><th></th></tr></thead><tbody>';
+  var h='<table class="db-table"><thead><tr><th>Kunde</th><th>Org.nr</th><th>Mnd.pris</th><th>Status</th><th>Sist endret</th><th></th></tr></thead><tbody>';
   idx.forEach(function(e){
     var dato=e.dato?e.dato:'–';
+    var status=e.tilbudGenerert?'<span style="color:#2a7000;font-size:.78rem;font-weight:600">Tilbud generert</span>':'<span style="color:#e8a735;font-size:.78rem;font-weight:600">Under arbeid</span>';
     h+='<tr style="cursor:pointer" onclick="loadTilbudFromDb(\''+e.id+'\');closeKundeOversikt()">';
     h+='<td><strong>'+escHtml(e.navn||'Uten navn')+'</strong></td>';
     h+='<td>'+(e.org||'–')+'</td>';
     h+='<td>'+fmt(e.mndPris||0)+' kr</td>';
+    h+='<td>'+status+'</td>';
     h+='<td>'+dato+'</td>';
-    h+='<td style="text-align:right"><button class="btn btn-outline" style="font-size:.72rem;padding:.2rem .5rem" onclick="event.stopPropagation();deleteTilbudFromDb(\''+e.id+'\',\''+escHtml(e.navn||'')+'\');renderKundeOversikt()">Slett</button></td>';
+    h+='<td style="text-align:right"><button class="btn btn-outline" style="font-size:.72rem;padding:.2rem .5rem;color:#c44;border-color:#c44" onclick="event.stopPropagation();deleteTilbudFromDb(\''+e.id+'\',\''+escHtml(e.navn||'')+'\');renderKundeOversikt()">Slett</button></td>';
     h+='</tr>';
   });
   h+='</tbody></table>';
@@ -1511,7 +1514,7 @@ function recalc(){
 }
 
 function fmtDate(d){if(!d)return'\u2013';return new Date(d).toLocaleDateString('nb-NO',{day:'numeric',month:'long',year:'numeric'})}
-function openTilbud(){recalc();const t=new Date();if(!$('tilbudDato').value)$('tilbudDato').value=t.toISOString().split('T')[0];if(!$('tilbudGyldig').value){const g=new Date(t);g.setDate(g.getDate()+30);$('tilbudGyldig').value=g.toISOString().split('T')[0]}if(!$('tilbudNr').value)$('tilbudNr').value='T-'+t.getFullYear()+'-'+String(Math.floor(Math.random()*900)+100);if(!$('tilbudIntro').value||$('tilbudIntro').dataset.auto==='1'){const k=$('kundeNavn').value.trim()||'[Kundenavn]';var introTekst='Takk for hyggelig dialog. Vi har gleden av \u00e5 presentere f\u00f8lgende tilbud p\u00e5 regnskaps- og r\u00e5dgivningstjenester for '+k+'. Tilbudet er basert p\u00e5 oppgitt informasjon om virksomhetens omfang og behov.';var byraaVal=$('selskapSelect').value;if(byraaVal==='eoa'||byraaVal==='eof'){introTekst+='\n\nEika \u00d8konomi \u00d8st er et regionalt konsern innen regnskap og \u00f8konomisk r\u00e5dgivning, med over 20 ansatte og sterk lokal tilstedev\u00e6relse i Indre \u00d8stfold, Follo og Romerike. Vi er representert gjennom Eika \u00d8konomi Askim AS og Eika \u00d8konomi Follo AS, og er tett p\u00e5 kundene v\u00e5re der de driver sin virksomhet. Vi kombinerer personlig r\u00e5dgivning med effektive, digitale l\u00f8sninger \u2013 slik f\u00e5r kundene v\u00e5re bedre oversikt, tryggere beslutninger og mer tid til \u00e5 utvikle egen virksomhet. Vi kjenner det lokale n\u00e6ringslivet, tilpasser oss kundens behov og er en proaktiv sparringspartner som bidrar til vekst og verdiskaping p\u00e5 lang sikt.'}$('tilbudIntro').value=introTekst;$('tilbudIntro').dataset.auto='1'}renderTilbud();$('tilbudModal').classList.add('active');document.body.style.overflow='hidden';document.querySelectorAll('.tilbud-edit input,.tilbud-edit textarea').forEach(function(e){e.removeEventListener('input',renderTilbud);e.addEventListener('input',renderTilbud)});$('tilbudIntro').addEventListener('input',function(){this.dataset.auto='0'})}function closeTilbud(){$('tilbudModal').classList.remove('active');document.body.style.overflow=''}
+function openTilbud(){window._tilbudGenerert=true;recalc();const t=new Date();if(!$('tilbudDato').value)$('tilbudDato').value=t.toISOString().split('T')[0];if(!$('tilbudGyldig').value){const g=new Date(t);g.setDate(g.getDate()+30);$('tilbudGyldig').value=g.toISOString().split('T')[0]}if(!$('tilbudNr').value)$('tilbudNr').value='T-'+t.getFullYear()+'-'+String(Math.floor(Math.random()*900)+100);if(!$('tilbudIntro').value||$('tilbudIntro').dataset.auto==='1'){const k=$('kundeNavn').value.trim()||'[Kundenavn]';var introTekst='Takk for hyggelig dialog. Vi har gleden av \u00e5 presentere f\u00f8lgende tilbud p\u00e5 regnskaps- og r\u00e5dgivningstjenester for '+k+'. Tilbudet er basert p\u00e5 oppgitt informasjon om virksomhetens omfang og behov.';var byraaVal=$('selskapSelect').value;if(byraaVal==='eoa'||byraaVal==='eof'){introTekst+='\n\nEika \u00d8konomi \u00d8st er et regionalt konsern innen regnskap og \u00f8konomisk r\u00e5dgivning, med over 20 ansatte og sterk lokal tilstedev\u00e6relse i Indre \u00d8stfold, Follo og Romerike. Vi er representert gjennom Eika \u00d8konomi Askim AS og Eika \u00d8konomi Follo AS, og er tett p\u00e5 kundene v\u00e5re der de driver sin virksomhet. Vi kombinerer personlig r\u00e5dgivning med effektive, digitale l\u00f8sninger \u2013 slik f\u00e5r kundene v\u00e5re bedre oversikt, tryggere beslutninger og mer tid til \u00e5 utvikle egen virksomhet. Vi kjenner det lokale n\u00e6ringslivet, tilpasser oss kundens behov og er en proaktiv sparringspartner som bidrar til vekst og verdiskaping p\u00e5 lang sikt.'}$('tilbudIntro').value=introTekst;$('tilbudIntro').dataset.auto='1'}renderTilbud();$('tilbudModal').classList.add('active');document.body.style.overflow='hidden';document.querySelectorAll('.tilbud-edit input,.tilbud-edit textarea').forEach(function(e){e.removeEventListener('input',renderTilbud);e.addEventListener('input',renderTilbud)});$('tilbudIntro').addEventListener('input',function(){this.dataset.auto='0'})}function closeTilbud(){$('tilbudModal').classList.remove('active');document.body.style.overflow=''}
 
 function renderTilbud(){
   var sn=getSelskapNavn();$('tbSelskap').textContent=sn;$('tbSigSelskapLabel').textContent='For '+sn;
@@ -1552,7 +1555,7 @@ function renderTilbud(){
   }else{$('tbEngWrap').style.display='none'}
 }
 
-function resetAll(){document.querySelectorAll('input[type="number"]').forEach(function(e){e.value=e.id==='minPrBilag'?'4':e.id==='timeprisRegnskap'?P.timeprisRegnskap:e.defaultValue||'0'});document.querySelectorAll('input[type="checkbox"]').forEach(function(e){e.checked=false});document.querySelectorAll('input[type="text"],input[type="date"],textarea').forEach(function(e){e.value=''});document.querySelectorAll('select').forEach(function(e){e.selectedIndex=0});$('oppstartRabatt').value=0;$('prosjektAntField').style.display='none';$('oppstartRabattField').style.display='none';$('customSelskapCard').style.display='none';$('lonnCalcBox').style.display='none';prishistorikk=[];sisteJustering=null;renderPrishistorikk();$('justeringBanner').classList.remove('active','warn-yellow','warn-red');loadByraaPriser($('selskapSelect').value);recalc()}
+function resetAll(){window._tilbudGenerert=false;document.querySelectorAll('input[type="number"]').forEach(function(e){e.value=e.id==='minPrBilag'?'4':e.id==='timeprisRegnskap'?P.timeprisRegnskap:e.defaultValue||'0'});document.querySelectorAll('input[type="checkbox"]').forEach(function(e){e.checked=false});document.querySelectorAll('input[type="text"],input[type="date"],textarea').forEach(function(e){e.value=''});document.querySelectorAll('select').forEach(function(e){e.selectedIndex=0});$('oppstartRabatt').value=0;$('prosjektAntField').style.display='none';$('oppstartRabattField').style.display='none';$('customSelskapCard').style.display='none';$('lonnCalcBox').style.display='none';prishistorikk=[];sisteJustering=null;renderPrishistorikk();$('justeringBanner').classList.remove('active','warn-yellow','warn-red');loadByraaPriser($('selskapSelect').value);recalc()}
 
 // Close modals with overlay click / Escape
 $('settingsPanel').addEventListener('click',function(e){if(e.target===this)closeSettings()});
@@ -1724,6 +1727,7 @@ function exportJSON(){
 }
 
 function loadFromJSON(data){
+  window._tilbudGenerert=!!(data._tilbudGenerert);
   // Selskap
   if(data.selskap){$('selskapSelect').value=data.selskap;onSelskapChange()}
   // Kunde
