@@ -466,9 +466,12 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <div class="db-search-bar"><input type="text" id="koSearch" placeholder="Søk på kundenavn eller org.nr..." oninput="renderKundeOversikt()"></div>
 <div class="db-body" id="koBody" style="max-height:60vh"></div>
 <div class="db-meta" id="koMeta"></div>
-<div style="padding:.8rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.5rem;justify-content:flex-end">
+<div style="padding:.8rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.5rem;align-items:center;justify-content:space-between">
+<div id="koBackupInfo" style="font-size:.78rem;color:var(--muted)"></div>
+<div style="display:flex;gap:.5rem">
 <button onclick="exportDatabase()" style="font-size:.78rem;padding:.4rem .8rem;background:#f4f9e8;color:#4a7000;border:1px solid #90D000;border-radius:6px;cursor:pointer;font-weight:600">⬇ Eksporter backup</button>
 <button onclick="$('dbImportInput').click()" style="font-size:.78rem;padding:.4rem .8rem;background:#f4f9e8;color:#4a7000;border:1px solid #90D000;border-radius:6px;cursor:pointer;font-weight:600">⬆ Importer backup</button>
+</div>
 </div>
 </div></div>
 
@@ -1236,11 +1239,11 @@ function renderKundeOversikt(){
 
   if(kundeKeys.length===0&&!search){
     h+='<div style="padding:3rem;text-align:center;color:var(--muted)"><p style="font-size:1.1rem;margin-bottom:.5rem">Ingen lagrede kunder ennå</p><p style="font-size:.85rem">Fyll inn kundeinfo og tilbudet lagres automatisk.</p></div>';
-    el.innerHTML=h;$('koMeta').textContent='';return;
+    el.innerHTML=h;$('koMeta').textContent='';updateBackupInfo();return;
   }
   if(kundeKeys.length===0&&search){
     h+='<div style="padding:2rem;text-align:center;color:var(--muted)">Ingen treff for "'+search+'"</div>';
-    el.innerHTML=h;return;
+    el.innerHTML=h;updateBackupInfo();return;
   }
 
   // Kundekort i rutenett
@@ -1300,6 +1303,24 @@ function renderKundeOversikt(){
   h+='</div>';
   el.innerHTML=h;
   $('koMeta').textContent=totalKunder+' kunde'+(totalKunder!==1?'r':'')+' · '+totalTilbud+' tilbud totalt';
+  updateBackupInfo();
+}
+function updateBackupInfo(){
+  var bInfo=$('koBackupInfo');
+  if(!bInfo)return;
+  var sisteBackup=localStorage.getItem('siste_backup');
+  if(sisteBackup){
+    var bd=new Date(sisteBackup);
+    var dagerSiden=Math.floor((Date.now()-bd.getTime())/(1000*60*60*24));
+    var datoStr=bd.toLocaleDateString('nb-NO');
+    if(dagerSiden>=30){
+      bInfo.innerHTML='<span style="color:#c44;font-weight:600">Siste backup: '+datoStr+' ('+dagerSiden+' dager siden) — Ta backup nå!</span>';
+    }else{
+      bInfo.innerHTML='Siste backup: '+datoStr;
+    }
+  }else{
+    bInfo.innerHTML='<span style="color:#c44;font-weight:600">Ingen backup tatt — Ta backup nå!</span>';
+  }
 }
 function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 
@@ -1363,6 +1384,8 @@ function exportDatabase(){
   var d=new Date();var dato=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   a.download='Tilbudsdatabase_backup_'+dato+'.json';
   document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  localStorage.setItem('siste_backup',new Date().toISOString());
+  renderKundeOversikt();
 }
 
 function importDatabase(file){
