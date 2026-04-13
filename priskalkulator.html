@@ -343,8 +343,8 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <!-- KVALITET & RÅDGIVNING -->
 <div class="card"><div class="card-header open" onclick="toggleCard(this)"><svg class="chev" viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"/></svg><h2>Kvalitet & Rådgivning</h2><span class="badge" id="badge-kvalitet">0 kr/mnd</span></div>
 <div class="card-body open">
-<div class="toggle-row"><div class="label-text">Lovpålagt kvalitetsarbeid – ny kunde<small id="lbl-kvalNy">18 000 kr/år (1 500 kr/mnd)</small></div><span class="price-tag" id="tag-kvalNy">1 500 kr</span><label class="switch"><input type="checkbox" id="kvalNy" onchange="if(this.checked)$('kvalEks').checked=false;recalc()"><span class="slider"></span></label></div>
-<div class="toggle-row"><div class="label-text">Lovpålagt kvalitetsarbeid – eksisterende kunde<small id="lbl-kvalEks">13 200 kr/år (1 100 kr/mnd)</small></div><span class="price-tag" id="tag-kvalEks">1 100 kr</span><label class="switch"><input type="checkbox" id="kvalEks" onchange="if(this.checked)$('kvalNy').checked=false;recalc()"><span class="slider"></span></label></div>
+<div class="toggle-row"><div class="label-text">Lovpålagt kvalitetsarbeid – løpende kunde<small id="lbl-kvalNy">18 000 kr/år (1 500 kr/mnd)</small></div><span class="price-tag" id="tag-kvalNy">1 500 kr</span><label class="switch"><input type="checkbox" id="kvalNy" onchange="if(this.checked)$('kvalEks').checked=false;recalc()"><span class="slider"></span></label></div>
+<div class="toggle-row"><div class="label-text">Lovpålagt kvalitetsarbeid – årlig kunde<small id="lbl-kvalEks">13 200 kr/år (1 100 kr/mnd)</small></div><span class="price-tag" id="tag-kvalEks">1 100 kr</span><label class="switch"><input type="checkbox" id="kvalEks" onchange="if(this.checked)$('kvalNy').checked=false;recalc()"><span class="slider"></span></label></div>
 <div class="field" style="margin-top:1rem"><label>Rådgivningstimer / år <span class="hint" id="lbl-raadgiv">(1 600 kr/t)</span></label><div class="stepper"><button onclick="stepDec('raadgivTimer',-1)">−</button><input type="number" id="raadgivTimer" value="0" min="0" step="1" oninput="recalc()"><button onclick="stepDec('raadgivTimer',1)">+</button></div></div>
 <div class="field"><label>Seniorrådgivning / år <span class="hint" id="lbl-senior">(2 500 kr/t)</span></label><div class="stepper"><button onclick="stepDec('seniorTimer',-1)">−</button><input type="number" id="seniorTimer" value="0" min="0" step="1" oninput="recalc()"><button onclick="stepDec('seniorTimer',1)">+</button></div></div>
 </div></div>
@@ -414,8 +414,8 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <div class="settings-row"><label>Periodisk rapportering (kr/år)</label><input type="number" id="set_periodiskRapp" value="1500" onchange="applySettings()"></div>
 </div>
 <div class="settings-group"><h3>Kvalitetsarbeid (årlig)</h3>
-<div class="settings-row"><label>Ny kunde (kr/år)</label><input type="number" id="set_kvalNy" value="18000" onchange="applySettings()"></div>
-<div class="settings-row"><label>Eksisterende kunde (kr/år)</label><input type="number" id="set_kvalEks" value="13200" onchange="applySettings()"></div>
+<div class="settings-row"><label>Løpende kunde (kr/år)</label><input type="number" id="set_kvalNy" value="18000" onchange="applySettings()"></div>
+<div class="settings-row"><label>Årlig kunde (kr/år)</label><input type="number" id="set_kvalEks" value="13200" onchange="applySettings()"></div>
 </div>
 <div class="settings-group"><h3>Prosjektregnskap</h3>
 <div class="settings-row"><label>Prosjektenhet (kr/mnd)</label><input type="number" id="set_prosjektEnhet" value="500" onchange="applySettings()"></div>
