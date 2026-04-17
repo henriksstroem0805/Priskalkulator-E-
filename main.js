@@ -51,9 +51,27 @@ function createWindow() {
 
   mainWindow.loadFile('priskalkulator.html');
 
-  // Sjekk for oppdateringer etter 3 sekunder
+  // Sjekk for oppdateringer via GitHub API (enkel og pålitelig)
   setTimeout(() => {
-    autoUpdater.checkForUpdatesAndNotify();
+    const https = require('https');
+    https.get('https://api.github.com/repos/henriksstroem0805/Priskalkulator-E-/releases/latest', {
+      headers: { 'User-Agent': 'Priskalkulator' }
+    }, (res) => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => {
+        try {
+          const release = JSON.parse(data);
+          const latest = release.tag_name.replace('v', '');
+          const current = app.getVersion();
+          if (latest !== current) {
+            const exeAsset = release.assets.find(a => a.name.endsWith('.exe'));
+            const downloadUrl = exeAsset ? exeAsset.browser_download_url : release.html_url;
+            if (mainWindow) mainWindow.webContents.send('update-available-manual', latest, downloadUrl);
+          }
+        } catch (e) { console.log('Versjonssjekk feil:', e.message); }
+      });
+    }).on('error', (e) => { console.log('Versjonssjekk nettverksfeil:', e.message); });
   }, 3000);
 }
 

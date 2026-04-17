@@ -2387,21 +2387,12 @@ if(_isElectron){
     var meta=document.querySelector('.header-meta');
     if(meta)meta.innerHTML='Prismodell 2026<br>v'+v;
   });
-  // Lytt etter oppdateringer
-  window.electronStore.onUpdateAvailable(function(version){
-    if(confirm('Ny versjon '+version+' er tilgjengelig. Vil du laste ned og installere?')){
-      window.electronStore.downloadUpdate();
-    }
-  });
-  window.electronStore.onUpdateDownloaded(function(){
-    if(confirm('Oppdatering er lastet ned. Vil du starte på nytt for å installere?'))
-      window.electronStore.installUpdate();
-  });
-  // Fallback: manuell oppdateringssjekk
+  // Lytt etter oppdateringer (viser banner i appen)
   window.electronStore.onUpdateAvailableManual(function(version,url){
-    if(confirm('Ny versjon '+version+' er tilgjengelig.\n\nAuto-oppdatering feilet. Vil du åpne nedlastingssiden?')){
-      window.open(url,'_blank');
-    }
+    var banner=document.createElement('div');
+    banner.style.cssText='position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#4a7000,#90D000);color:#fff;padding:.8rem 1.5rem;z-index:100000;display:flex;align-items:center;justify-content:space-between;font-size:.9rem;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.2)';
+    banner.innerHTML='<span>Ny versjon '+version+' er tilgjengelig!</span><div style="display:flex;gap:.5rem"><a href="'+url+'" style="background:#fff;color:#4a7000;padding:.4rem 1rem;border-radius:6px;text-decoration:none;font-weight:700;font-size:.85rem" target="_blank">Last ned oppdatering</a><button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:#fff;cursor:pointer;font-size:1.2rem;padding:0 .3rem">&times;</button></div>';
+    document.body.appendChild(banner);
   });
 }else{
   // Nettleser: vis kundeoversikt ved oppstart
