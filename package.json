@@ -1,0 +1,50 @@
+{
+  "name": "priskalkulator",
+  "version": "1.0.0",
+  "description": "Priskalkulator – Eika Økonomi",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "author": "Eika Økonomi",
+  "license": "UNLICENSED",
+  "private": true,
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.0"
+  },
+  "build": {
+    "appId": "no.eikaøkonomi.priskalkulator",
+    "productName": "Priskalkulator",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "priskalkulator.html",
+      "*.png",
+      "*.webp",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": null
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "henriksstroem0805",
+      "repo": "Priskalkulator-E-"
+    }
+  }
+}

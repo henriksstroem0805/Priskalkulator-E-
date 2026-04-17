@@ -1,0 +1,31 @@
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('electronStore', {
+  // Indeks
+  getIndex: () => ipcRenderer.invoke('store:getIndex'),
+  saveIndex: (idx) => ipcRenderer.invoke('store:saveIndex', idx),
+
+  // Tilbud
+  getTilbud: (id) => ipcRenderer.invoke('store:getTilbud', id),
+  saveTilbud: (id, data) => ipcRenderer.invoke('store:saveTilbud', id, data),
+  deleteTilbud: (id) => ipcRenderer.invoke('store:deleteTilbud', id),
+
+  // Eksport/import
+  exportAll: () => ipcRenderer.invoke('store:exportAll'),
+  importAll: (data) => ipcRenderer.invoke('store:importAll', data),
+
+  // Backup-metadata
+  getBackupMeta: () => ipcRenderer.invoke('store:getBackupMeta'),
+  setBackupMeta: (meta) => ipcRenderer.invoke('store:setBackupMeta', meta),
+
+  // Datamappe
+  getDataPath: () => ipcRenderer.invoke('store:getDataPath'),
+
+  // App
+  getVersion: () => ipcRenderer.invoke('app:getVersion'),
+  installUpdate: () => ipcRenderer.invoke('app:installUpdate'),
+
+  // Update events
+  onUpdateAvailable: (cb) => ipcRenderer.on('update-available', cb),
+  onUpdateDownloaded: (cb) => ipcRenderer.on('update-downloaded', cb)
+});

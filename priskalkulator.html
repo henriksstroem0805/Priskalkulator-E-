@@ -1108,13 +1108,23 @@ function dismissJusteringBanner(){$('justeringBanner').classList.remove('active'
 var DB_PREFIX='tilbud_';
 var DB_INDEX_KEY='tilbud_index';
 window._aktivTilbudId=null;
+var _isElectron=!!(window.electronStore);
+
+// === LAGRINGSLAG: Electron (fil) eller nettleser (localStorage) ===
+// I Electron brukes asynkrone funksjoner via IPC. For å holde koden enkel
+// bruker vi en intern cache som synkroniseres med filsystemet i bakgrunnen.
+var _dbCache={idx:null,tilbud:{}};
 
 function generateTilbudId(){return 't_'+Date.now()+'_'+Math.random().toString(36).substr(2,4)}
 
 function getDbIndex(){
+  if(_isElectron&&_dbCache.idx!==null)return _dbCache.idx;
   try{var idx=localStorage.getItem(DB_INDEX_KEY);return idx?JSON.parse(idx):[]}catch(e){return[]}
 }
-function saveDbIndex(idx){localStorage.setItem(DB_INDEX_KEY,JSON.stringify(idx))}
+function saveDbIndex(idx){
+  if(_isElectron){_dbCache.idx=idx;window.electronStore.saveIndex(idx)}
+  else{localStorage.setItem(DB_INDEX_KEY,JSON.stringify(idx))}
+}
 
 function saveTilbudToDb(silent){
   var data=buildTilbudData();
@@ -1137,7 +1147,12 @@ function saveTilbudToDb(silent){
   data._byraa=$('selskapSelect').value;
   data._byraaNavn=byraaNavn;
   data._tilbudGenerert=!!window._tilbudGenerert;
-  try{localStorage.setItem(DB_PREFIX+id,JSON.stringify(data))}catch(e){alert('Kunne ikke lagre — localStorage er fullt.');return}
+  if(_isElectron){
+    _dbCache.tilbud[id]=data;
+    window.electronStore.saveTilbud(id,data);
+  }else{
+    try{localStorage.setItem(DB_PREFIX+id,JSON.stringify(data))}catch(e){alert('Kunne ikke lagre — localStorage er fullt.');return}
+  }
   // Oppdater indeks
   var idxEntry={id:id,navn:kundeNavn,org:kundeOrg,mndPris:S.mndTot||0,byraa:$('selskapSelect').value,byraaNavn:byraaNavn,dato:new Date().toISOString().slice(0,10),tilbudGenerert:!!window._tilbudGenerert};
   if(existing){var i=idx.indexOf(existing);idx[i]=idxEntry}else{idx.push(idxEntry)}
@@ -1146,6 +1161,15 @@ function saveTilbudToDb(silent){
 }
 
 function loadTilbudFromDb(id){
+  if(_isElectron){
+    window.electronStore.getTilbud(id).then(function(data){
+      if(!data){alert('Tilbudet ble ikke funnet.');return}
+      window._aktivTilbudId=id;
+      loadFromJSON(data);
+      closeDatabase();
+    });
+    return;
+  }
   try{
     var raw=localStorage.getItem(DB_PREFIX+id);
     if(!raw){alert('Tilbudet ble ikke funnet.');return}
@@ -1158,7 +1182,12 @@ function loadTilbudFromDb(id){
 
 function deleteTilbudFromDb(id,navn){
   if(!confirm('Er du sikker på at du vil slette tilbudet for '+(navn||'denne kunden')+'?'))return;
-  localStorage.removeItem(DB_PREFIX+id);
+  if(_isElectron){
+    window.electronStore.deleteTilbud(id);
+    delete _dbCache.tilbud[id];
+  }else{
+    localStorage.removeItem(DB_PREFIX+id);
+  }
   var idx=getDbIndex().filter(function(e){return e.id!==id});
   saveDbIndex(idx);
   renderDatabase();
@@ -1327,18 +1356,24 @@ function renderKundeOversikt(){
 function updateBackupInfo(){
   var bInfo=$('koBackupInfo');
   if(!bInfo)return;
-  var sisteBackup=localStorage.getItem('siste_backup');
-  if(sisteBackup){
-    var bd=new Date(sisteBackup);
-    var dagerSiden=Math.floor((Date.now()-bd.getTime())/(1000*60*60*24));
-    var datoStr=bd.toLocaleDateString('nb-NO');
-    if(dagerSiden>=30){
-      bInfo.innerHTML='<span style="color:#c44;font-weight:600">Siste backup: '+datoStr+' ('+dagerSiden+' dager siden) — Ta backup nå!</span>';
+  function showBackupDate(sisteBackup){
+    if(sisteBackup){
+      var bd=new Date(sisteBackup);
+      var dagerSiden=Math.floor((Date.now()-bd.getTime())/(1000*60*60*24));
+      var datoStr=bd.toLocaleDateString('nb-NO');
+      if(dagerSiden>=30){
+        bInfo.innerHTML='<span style="color:#c44;font-weight:600">Siste backup: '+datoStr+' ('+dagerSiden+' dager siden) — Ta backup nå!</span>';
+      }else{
+        bInfo.innerHTML='Siste backup: '+datoStr;
+      }
     }else{
-      bInfo.innerHTML='Siste backup: '+datoStr;
+      bInfo.innerHTML='<span style="color:#c44;font-weight:600">Ingen backup tatt — Ta backup nå!</span>';
     }
+  }
+  if(_isElectron){
+    window.electronStore.getBackupMeta().then(function(meta){showBackupDate(meta&&meta.siste_backup?meta.siste_backup:null)});
   }else{
-    bInfo.innerHTML='<span style="color:#c44;font-weight:600">Ingen backup tatt — Ta backup nå!</span>';
+    showBackupDate(localStorage.getItem('siste_backup'));
   }
 }
 function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
@@ -1392,6 +1427,21 @@ function renderDatabase(){
 function exportDatabase(){
   var idx=getDbIndex();
   if(idx.length===0){alert('Ingen tilbud å eksportere.');return}
+  if(_isElectron){
+    window.electronStore.exportAll().then(function(data){
+      if(!data)return;
+      var json=JSON.stringify(data,null,2);
+      var blob=new Blob([json],{type:'application/json'});
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement('a');a.href=url;
+      var d=new Date();var dato=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      a.download='Tilbudsdatabase_backup_'+dato+'.json';
+      document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+      window.electronStore.setBackupMeta({siste_backup:new Date().toISOString()});
+      renderKundeOversikt();
+    });
+    return;
+  }
   var allData=[];
   idx.forEach(function(e){
     try{var raw=localStorage.getItem(DB_PREFIX+e.id);if(raw)allData.push(JSON.parse(raw))}catch(err){}
@@ -1811,11 +1861,7 @@ function renderTilbud(){
 }
 
 // === SKRIVEBESKYTTET TILBUDSVISNING I NY FANE ===
-function openReadOnlyTilbud(id){
-  try{
-    var raw=localStorage.getItem(DB_PREFIX+id);
-    if(!raw){alert('Tilbudet ble ikke funnet.');return}
-    var data=JSON.parse(raw);
+function _renderReadOnlyTilbud(data){
     var d=data._beregnetDetalj||{};
     var b=data.beregnet||{};
     var kunde=data.kunde||{};
@@ -1965,6 +2011,21 @@ function openReadOnlyTilbud(id){
     var w=window.open('','_blank');
     w.document.write(html);
     w.document.close();
+}
+
+function openReadOnlyTilbud(id){
+  if(_isElectron){
+    window.electronStore.getTilbud(id).then(function(data){
+      if(!data){alert('Tilbudet ble ikke funnet.');return}
+      _renderReadOnlyTilbud(data);
+    });
+    return;
+  }
+  try{
+    var raw=localStorage.getItem(DB_PREFIX+id);
+    if(!raw){alert('Tilbudet ble ikke funnet.');return}
+    var data=JSON.parse(raw);
+    _renderReadOnlyTilbud(data);
   }catch(e){alert('Feil ved visning av tilbud: '+e.message)}
 }
 
@@ -2254,7 +2315,25 @@ function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>
 loadByraaPriser($('selskapSelect').value);
 recalc();
 updateUrlFromPrices();
-// Vis kundeoversikt ved oppstart
-openKundeOversikt();
+// Electron: last indeks fra fil ved oppstart
+if(_isElectron){
+  window.electronStore.getIndex().then(function(idx){
+    _dbCache.idx=idx||[];
+    openKundeOversikt();
+  });
+  // Vis versjonsnummer
+  window.electronStore.getVersion().then(function(v){
+    var meta=document.querySelector('.header-meta');
+    if(meta)meta.innerHTML='Prismodell 2026<br>v'+v;
+  });
+  // Lytt etter oppdateringer
+  window.electronStore.onUpdateDownloaded(function(){
+    if(confirm('En ny versjon er tilgjengelig. Vil du oppdatere nå?'))
+      window.electronStore.installUpdate();
+  });
+}else{
+  // Nettleser: vis kundeoversikt ved oppstart
+  openKundeOversikt();
+}
 </script>
 </body></html>
