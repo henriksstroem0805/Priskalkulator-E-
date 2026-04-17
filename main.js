@@ -23,10 +23,11 @@ function ensureDirs() {
       files.forEach(function(f) {
         var src = path.join(oldDir, f);
         var dest = path.join(TILBUD_DIR, f);
-        if (!fs.existsSync(dest)) fs.renameSync(src, dest);
+        if (!fs.existsSync(dest)) {
+          try { fs.copyFileSync(src, dest); } catch(e2) {}
+        }
       });
-      if (fs.readdirSync(oldDir).length === 0) fs.rmdirSync(oldDir);
-    } catch(e) { console.error('Migreringsfeil:', e); }
+    } catch(e) { console.log('Migrering hoppet over:', e.message); }
   }
 }
 
