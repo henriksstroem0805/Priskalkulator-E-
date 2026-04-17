@@ -1478,14 +1478,14 @@ function exportDatabase(){
     window.electronStore.exportAll().then(function(data){
       if(!data)return;
       var json=JSON.stringify(data,null,2);
-      var blob=new Blob([json],{type:'application/json'});
-      var url=URL.createObjectURL(blob);
-      var a=document.createElement('a');a.href=url;
-      var d=new Date();var dato=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-      a.download='Tilbudsdatabase_backup_'+dato+'.json';
-      document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
-      window.electronStore.setBackupMeta({siste_backup:new Date().toISOString()});
-      renderKundeOversikt();
+      window.electronStore.saveBackupFile(json).then(function(result){
+        if(result.ok){
+          alert('Backup lagret i:\n'+result.path);
+          renderKundeOversikt();
+        }else{
+          alert('Feil ved lagring av backup: '+result.error);
+        }
+      });
     });
     return;
   }
@@ -2058,6 +2058,13 @@ function _renderReadOnlyTilbud(data){
     var w=window.open('','_blank');
     w.document.write(html);
     w.document.close();
+
+    // I Electron: lagre også PDF i genererte tilbud-mappen
+    if(_isElectron){
+      window.electronStore.saveTilbudPDF(html,kunde.navn||'tilbud').then(function(result){
+        if(result.ok)console.log('PDF lagret:',result.path);
+      });
+    }
 }
 
 function openReadOnlyTilbud(id){

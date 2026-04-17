@@ -5,7 +5,8 @@ const { autoUpdater } = require('electron-updater');
 
 // Datamappe: Dokumenter/Priskalkulator/
 const DATA_DIR = path.join(app.getPath('documents'), 'Priskalkulator');
-const TILBUD_DIR = path.join(DATA_DIR, 'tilbud');
+const TILBUD_DIR = path.join(DATA_DIR, 'genererte tilbud');
+const BACKUP_DIR = path.join(DATA_DIR, 'backup');
 const INDEX_FILE = path.join(DATA_DIR, 'tilbud_index.json');
 const BACKUP_META_FILE = path.join(DATA_DIR, 'backup_meta.json');
 
@@ -13,6 +14,20 @@ const BACKUP_META_FILE = path.join(DATA_DIR, 'backup_meta.json');
 function ensureDirs() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   if (!fs.existsSync(TILBUD_DIR)) fs.mkdirSync(TILBUD_DIR, { recursive: true });
+  if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+  // Migrer fra gammel "tilbud"-mappe hvis den finnes
+  var oldDir = path.join(DATA_DIR, 'tilbud');
+  if (fs.existsSync(oldDir) && oldDir !== TILBUD_DIR) {
+    try {
+      var files = fs.readdirSync(oldDir);
+      files.forEach(function(f) {
+        var src = path.join(oldDir, f);
+        var dest = path.join(TILBUD_DIR, f);
+        if (!fs.existsSync(dest)) fs.renameSync(src, dest);
+      });
+      if (fs.readdirSync(oldDir).length === 0) fs.rmdirSync(oldDir);
+    } catch(e) { console.error('Migreringsfeil:', e); }
+  }
 }
 
 let mainWindow;
@@ -182,4 +197,47 @@ ipcMain.handle('app:installUpdate', () => {
 
 ipcMain.handle('app:getVersion', () => {
   return app.getVersion();
+});
+
+// Lagre backup-fil til backup-mappen
+ipcMain.handle('store:saveBackupFile', (event, json) => {
+  try {
+    const d = new Date();
+    const dato = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    const filnavn = 'Tilbudsdatabase_backup_' + dato + '.json';
+    const file = path.join(BACKUP_DIR, filnavn);
+    fs.writeFileSync(file, json, 'utf8');
+    // Oppdater backup-meta
+    fs.writeFileSync(BACKUP_META_FILE, JSON.stringify({ siste_backup: new Date().toISOString() }, null, 2), 'utf8');
+    return { ok: true, path: file };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+
+// Lagre PDF fra HTML til genererte tilbud-mappen
+ipcMain.handle('store:saveTilbudPDF', (event, htmlContent, kundeNavn) => {
+  try {
+    const pdfWin = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true } });
+    pdfWin.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(htmlContent));
+    return new Promise((resolve) => {
+      pdfWin.webContents.on('did-finish-load', () => {
+        setTimeout(() => {
+          pdfWin.webContents.printToPDF({ printBackground: true, marginType: 0 }).then(pdfData => {
+            const d = new Date();
+            const dato = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            const safeName = (kundeNavn || 'tilbud').replace(/[^a-zA-ZæøåÆØÅ0-9 _-]/g, '').trim();
+            const filnavn = 'Tilbud_' + safeName + '_' + dato + '.pdf';
+            const file = path.join(TILBUD_DIR, filnavn);
+            fs.writeFileSync(file, pdfData);
+            pdfWin.close();
+            resolve({ ok: true, path: file });
+          }).catch(err => { pdfWin.close(); resolve({ ok: false, error: err.message }); });
+        }, 500);
+      });
+    });
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+
+// Hent datamappe-stier
+ipcMain.handle('store:getPaths', () => {
+  return { data: DATA_DIR, tilbud: TILBUD_DIR, backup: BACKUP_DIR };
 });

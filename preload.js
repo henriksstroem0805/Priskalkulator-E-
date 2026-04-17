@@ -18,8 +18,15 @@ contextBridge.exposeInMainWorld('electronStore', {
   getBackupMeta: () => ipcRenderer.invoke('store:getBackupMeta'),
   setBackupMeta: (meta) => ipcRenderer.invoke('store:setBackupMeta', meta),
 
-  // Datamappe
+  // Backup-fil til mappe
+  saveBackupFile: (json) => ipcRenderer.invoke('store:saveBackupFile', json),
+
+  // PDF til genererte tilbud-mappe
+  saveTilbudPDF: (html, kundeNavn) => ipcRenderer.invoke('store:saveTilbudPDF', html, kundeNavn),
+
+  // Datamappe-stier
   getDataPath: () => ipcRenderer.invoke('store:getDataPath'),
+  getPaths: () => ipcRenderer.invoke('store:getPaths'),
 
   // App
   getVersion: () => ipcRenderer.invoke('app:getVersion'),
