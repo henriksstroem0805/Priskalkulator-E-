@@ -299,7 +299,7 @@ async function tryUnlock(){
   var arr=Array.from(new Uint8Array(hash));
   var hex=arr.map(function(b){return b.toString(16).padStart(2,'0')}).join('');
   // SHA-256 av "Henrik"
-  if(hex==='09b49db1e3e26033bf498d540f0e8206fca62b4fe4cb4b498184845354e2648a'){
+  if(hex==='0b4aeb7299d551d4366bbe8f7bc91d6b29b603dd6daf19b5bbad5dc8fb703312'){
     document.getElementById('lockScreen').style.display='none';
   }else{
     document.getElementById('lockErr').textContent='Feil passord. Prøv igjen.';
