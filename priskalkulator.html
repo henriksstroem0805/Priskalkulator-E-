@@ -260,9 +260,56 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .dash-btn-godkjenn:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(74,112,0,.25)}
 .dash-btn-godkjenn:active{transform:translateY(0)}
 @media(max-width:700px){.dash-kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.lock-overlay{position:fixed;inset:0;background:#f5f8ed;z-index:99999;display:flex;align-items:center;justify-content:center}
+.lock-box{text-align:center;padding:2rem}
+.lock-icon{width:80px;height:80px;margin:0 auto 1.5rem;background:linear-gradient(135deg,#4a7000,#90D000);border-radius:20px;display:flex;align-items:center;justify-content:center}
+.lock-icon svg{width:36px;height:36px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.lock-box h1{font-size:1.4rem;color:#2a3318;margin-bottom:.3rem;font-family:var(--font-display)}
+.lock-sub{color:#6b7a56;font-size:.88rem;margin-bottom:2rem}
+.lock-input{width:100%;max-width:320px;padding:.85rem 1.1rem;border:2px solid #d4e2be;border-radius:12px;font-size:1rem;font-family:inherit;outline:none;background:#fff;color:#2a3318;transition:border-color .2s,box-shadow .2s}
+.lock-input:focus{border-color:#90D000;box-shadow:0 0 0 4px rgba(144,208,0,.12)}
+.lock-btn{max-width:320px;width:100%;padding:.85rem;border:none;border-radius:12px;background:linear-gradient(135deg,#4a7000,#90D000);color:#fff;font-size:1rem;font-weight:600;font-family:inherit;cursor:pointer;margin-top:.8rem;transition:transform .1s,box-shadow .2s}
+.lock-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(74,112,0,.25)}
+.lock-err{color:#c44;font-size:.85rem;margin-top:.75rem;min-height:1.2rem}
+@keyframes lockShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.lock-shake{animation:lockShake .3s ease}
 </style>
 </head>
 <body>
+<!-- PASSORDLÅS (vises kun i Electron-app) -->
+<div class="lock-overlay" id="lockScreen" style="display:none">
+<div class="lock-box">
+<div class="lock-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="16" r="1"/></svg></div>
+<h1>Priskalkulator</h1>
+<p class="lock-sub">Eika Økonomi – intern bruk</p>
+<input type="password" id="lockPw" class="lock-input" placeholder="Skriv inn passord..." autofocus autocomplete="off">
+<button class="lock-btn" onclick="tryUnlock()">Lås opp</button>
+<div class="lock-err" id="lockErr"></div>
+</div>
+</div>
+<script>
+// Vis passordlås kun i Electron
+if(window.electronStore){document.getElementById('lockScreen').style.display='flex'}
+document.getElementById('lockPw').addEventListener('keydown',function(e){if(e.key==='Enter')tryUnlock()});
+async function tryUnlock(){
+  var pw=document.getElementById('lockPw').value;
+  if(!pw)return;
+  var enc=new TextEncoder();
+  var hash=await crypto.subtle.digest('SHA-256',enc.encode(pw));
+  var arr=Array.from(new Uint8Array(hash));
+  var hex=arr.map(function(b){return b.toString(16).padStart(2,'0')}).join('');
+  // SHA-256 av "Henrik"
+  if(hex==='09b49db1e3e26033bf498d540f0e8206fca62b4fe4cb4b498184845354e2648a'){
+    document.getElementById('lockScreen').style.display='none';
+  }else{
+    document.getElementById('lockErr').textContent='Feil passord. Prøv igjen.';
+    var box=document.querySelector('.lock-box');
+    box.classList.remove('lock-shake');void box.offsetWidth;box.classList.add('lock-shake');
+    document.getElementById('lockPw').value='';document.getElementById('lockPw').focus();
+  }
+}
+</script>
+
 <header class="header"><div class="header-inner">
 <div class="logo"><div class="logo-icon">EØ</div><div><h1>Priskalkulator</h1><span>Eika Økonomi</span></div></div>
 <div class="header-right">

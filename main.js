@@ -22,12 +22,17 @@ function createWindow() {
     width: 1400,
     height: 900,
     title: 'Priskalkulator – Eika Økonomi',
+    autoHideMenuBar: true,
+    menuBarVisible: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false
     }
   });
+
+  // Fjern menylinje helt
+  mainWindow.setMenu(null);
 
   mainWindow.loadFile('priskalkulator.html');
 
