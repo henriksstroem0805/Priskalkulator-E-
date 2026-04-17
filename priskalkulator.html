@@ -2387,12 +2387,21 @@ if(_isElectron){
     var meta=document.querySelector('.header-meta');
     if(meta)meta.innerHTML='Prismodell 2026<br>v'+v;
   });
-  // Lytt etter oppdateringer (viser banner i appen)
-  window.electronStore.onUpdateAvailableManual(function(version,url){
-    var banner=document.createElement('div');
-    banner.style.cssText='position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#4a7000,#90D000);color:#fff;padding:.8rem 1.5rem;z-index:100000;display:flex;align-items:center;justify-content:space-between;font-size:.9rem;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.2)';
-    banner.innerHTML='<span>Ny versjon '+version+' er tilgjengelig!</span><div style="display:flex;gap:.5rem"><a href="'+url+'" style="background:#fff;color:#4a7000;padding:.4rem 1rem;border-radius:6px;text-decoration:none;font-weight:700;font-size:.85rem" target="_blank">Last ned oppdatering</a><button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:#fff;cursor:pointer;font-size:1.2rem;padding:0 .3rem">&times;</button></div>';
-    document.body.appendChild(banner);
+  // Sjekk for oppdateringer direkte fra renderer
+  window.electronStore.getVersion().then(function(currentVersion){
+    fetch('https://api.github.com/repos/henriksstroem0805/Priskalkulator-E-/releases/latest')
+    .then(function(r){return r.json()})
+    .then(function(release){
+      var latest=release.tag_name.replace('v','');
+      if(latest!==currentVersion){
+        var exeAsset=release.assets.find(function(a){return a.name.endsWith('.exe')});
+        var url=exeAsset?exeAsset.browser_download_url:release.html_url;
+        var banner=document.createElement('div');
+        banner.style.cssText='position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#4a7000,#90D000);color:#fff;padding:.8rem 1.5rem;z-index:100000;display:flex;align-items:center;justify-content:space-between;font-size:.9rem;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.2)';
+        banner.innerHTML='<span>Ny versjon '+latest+' er tilgjengelig! (du har v'+currentVersion+')</span><div style="display:flex;gap:.5rem"><a href="'+url+'" style="background:#fff;color:#4a7000;padding:.4rem 1rem;border-radius:6px;text-decoration:none;font-weight:700;font-size:.85rem" target="_blank">Last ned oppdatering</a><button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:#fff;cursor:pointer;font-size:1.2rem;padding:0 .3rem">&times;</button></div>';
+        document.body.appendChild(banner);
+      }
+    }).catch(function(){});
   });
 }else{
   // Nettleser: vis kundeoversikt ved oppstart
