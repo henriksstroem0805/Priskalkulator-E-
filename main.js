@@ -57,8 +57,51 @@ function createWindow() {
   }, 3000);
 }
 
+// Automatisk backup ved oppstart (maks én per dag)
+function autoBackup() {
+  try {
+    if (!fs.existsSync(INDEX_FILE)) return;
+    const idx = JSON.parse(fs.readFileSync(INDEX_FILE, 'utf8'));
+    if (idx.length === 0) return;
+
+    const d = new Date();
+    const dato = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    const backupFile = path.join(BACKUP_DIR, 'auto_backup_' + dato + '.json');
+
+    // Kun én auto-backup per dag
+    if (fs.existsSync(backupFile)) return;
+
+    const allData = [];
+    idx.forEach(e => {
+      try {
+        const file = path.join(TILBUD_DIR, e.id + '.json');
+        if (fs.existsSync(file)) allData.push(JSON.parse(fs.readFileSync(file, 'utf8')));
+      } catch (err) {}
+    });
+
+    const json = JSON.stringify({ _type: 'tilbudsdatabase', _exportDate: new Date().toISOString(), _count: allData.length, tilbud: allData }, null, 2);
+    fs.writeFileSync(backupFile, json, 'utf8');
+    fs.writeFileSync(BACKUP_META_FILE, JSON.stringify({ siste_backup: new Date().toISOString() }, null, 2), 'utf8');
+    console.log('Auto-backup lagret:', backupFile);
+
+    // Slett backuper eldre enn 30 dager
+    const files = fs.readdirSync(BACKUP_DIR);
+    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    files.forEach(f => {
+      if (f.startsWith('auto_backup_')) {
+        const filePath = path.join(BACKUP_DIR, f);
+        try {
+          const stat = fs.statSync(filePath);
+          if (stat.mtimeMs < cutoff) { fs.unlinkSync(filePath); console.log('Slettet gammel backup:', f); }
+        } catch (e) {}
+      }
+    });
+  } catch (e) { console.error('Auto-backup feil:', e); }
+}
+
 app.whenReady().then(() => {
   ensureDirs();
+  autoBackup();
   createWindow();
 });
 

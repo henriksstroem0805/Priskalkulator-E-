@@ -520,6 +520,10 @@ async function tryUnlock(){
 <button onclick="$('dbImportInput').click()" style="font-size:.78rem;padding:.4rem .8rem;background:#f4f9e8;color:#4a7000;border:1px solid #90D000;border-radius:6px;cursor:pointer;font-weight:600">⬆ Importer backup</button>
 </div>
 </div>
+<div id="koElectronBackup" style="padding:.6rem 1.2rem;border-top:1px solid var(--border);display:none;align-items:center;justify-content:space-between">
+<div style="font-size:.78rem;color:var(--muted)">Backup tas automatisk daglig i <strong>Dokumenter/Priskalkulator/backup/</strong></div>
+<button onclick="$('dbImportInput').click()" style="font-size:.78rem;padding:.4rem .8rem;background:#f4f9e8;color:#4a7000;border:1px solid #90D000;border-radius:6px;cursor:pointer;font-weight:600">⬆ Importer backup</button>
+</div>
 </div></div>
 
 <!-- HJELP MODAL -->
@@ -2371,8 +2375,9 @@ recalc();
 updateUrlFromPrices();
 // Electron: last indeks fra fil ved oppstart
 if(_isElectron){
-  // Skjul backup-seksjon i Electron (data lagres som filer)
+  // Skjul nettleser-backup, vis Electron-backup
   var bs=$('koBackupSection');if(bs)bs.style.display='none';
+  var eb=$('koElectronBackup');if(eb)eb.style.display='flex';
   window.electronStore.getIndex().then(function(idx){
     _dbCache.idx=idx||[];
     openKundeOversikt();
