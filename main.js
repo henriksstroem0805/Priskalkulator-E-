@@ -183,12 +183,42 @@ ipcMain.handle('store:getDataPath', () => {
 });
 
 // Auto-updater events
-autoUpdater.on('update-available', () => {
-  if (mainWindow) mainWindow.webContents.send('update-available');
+autoUpdater.autoDownload = false;
+
+autoUpdater.on('update-available', (info) => {
+  console.log('Oppdatering tilgjengelig:', info.version);
+  if (mainWindow) mainWindow.webContents.send('update-available', info.version);
 });
 
 autoUpdater.on('update-downloaded', () => {
+  console.log('Oppdatering lastet ned');
   if (mainWindow) mainWindow.webContents.send('update-downloaded');
+});
+
+autoUpdater.on('error', (err) => {
+  console.log('Auto-updater feil:', err.message);
+  // Fallback: sjekk manuelt via GitHub API
+  const https = require('https');
+  https.get('https://api.github.com/repos/henriksstroem0805/Priskalkulator-E-/releases/latest', {
+    headers: { 'User-Agent': 'Priskalkulator' }
+  }, (res) => {
+    let data = '';
+    res.on('data', c => data += c);
+    res.on('end', () => {
+      try {
+        const release = JSON.parse(data);
+        const latest = release.tag_name.replace('v', '');
+        const current = app.getVersion();
+        if (latest !== current) {
+          if (mainWindow) mainWindow.webContents.send('update-available-manual', latest, release.html_url);
+        }
+      } catch (e) {}
+    });
+  }).on('error', () => {});
+});
+
+ipcMain.handle('app:downloadUpdate', () => {
+  autoUpdater.downloadUpdate();
 });
 
 ipcMain.handle('app:installUpdate', () => {

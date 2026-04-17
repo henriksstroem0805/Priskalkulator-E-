@@ -33,6 +33,8 @@ contextBridge.exposeInMainWorld('electronStore', {
   installUpdate: () => ipcRenderer.invoke('app:installUpdate'),
 
   // Update events
-  onUpdateAvailable: (cb) => ipcRenderer.on('update-available', cb),
-  onUpdateDownloaded: (cb) => ipcRenderer.on('update-downloaded', cb)
+  onUpdateAvailable: (cb) => ipcRenderer.on('update-available', (e, version) => cb(version)),
+  onUpdateDownloaded: (cb) => ipcRenderer.on('update-downloaded', cb),
+  onUpdateAvailableManual: (cb) => ipcRenderer.on('update-available-manual', (e, version, url) => cb(version, url)),
+  downloadUpdate: () => ipcRenderer.invoke('app:downloadUpdate')
 });

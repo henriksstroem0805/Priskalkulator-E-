@@ -2381,9 +2381,20 @@ if(_isElectron){
     if(meta)meta.innerHTML='Prismodell 2026<br>v'+v;
   });
   // Lytt etter oppdateringer
+  window.electronStore.onUpdateAvailable(function(version){
+    if(confirm('Ny versjon '+version+' er tilgjengelig. Vil du laste ned og installere?')){
+      window.electronStore.downloadUpdate();
+    }
+  });
   window.electronStore.onUpdateDownloaded(function(){
-    if(confirm('En ny versjon er tilgjengelig. Vil du oppdatere nå?'))
+    if(confirm('Oppdatering er lastet ned. Vil du starte på nytt for å installere?'))
       window.electronStore.installUpdate();
+  });
+  // Fallback: manuell oppdateringssjekk
+  window.electronStore.onUpdateAvailableManual(function(version,url){
+    if(confirm('Ny versjon '+version+' er tilgjengelig.\n\nAuto-oppdatering feilet. Vil du åpne nedlastingssiden?')){
+      window.open(url,'_blank');
+    }
   });
 }else{
   // Nettleser: vis kundeoversikt ved oppstart
