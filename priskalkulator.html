@@ -513,7 +513,7 @@ async function tryUnlock(){
 <div class="db-search-bar"><input type="text" id="koSearch" placeholder="Søk på kundenavn eller org.nr..." oninput="renderKundeOversikt()"></div>
 <div class="db-body" id="koBody" style="max-height:60vh"></div>
 <div class="db-meta" id="koMeta"></div>
-<div style="padding:.8rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.5rem;align-items:center;justify-content:space-between">
+<div id="koBackupSection" style="padding:.8rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.5rem;align-items:center;justify-content:space-between">
 <div id="koBackupInfo" style="font-size:.78rem;color:var(--muted)"></div>
 <div style="display:flex;gap:.5rem">
 <button onclick="exportDatabase()" style="font-size:.78rem;padding:.4rem .8rem;background:#f4f9e8;color:#4a7000;border:1px solid #90D000;border-radius:6px;cursor:pointer;font-weight:600">⬇ Eksporter backup</button>
@@ -1418,7 +1418,7 @@ function updateBackupInfo(){
     }
   }
   if(_isElectron){
-    window.electronStore.getBackupMeta().then(function(meta){showBackupDate(meta&&meta.siste_backup?meta.siste_backup:null)});
+    return; // Ikke vis backup-info i Electron
   }else{
     showBackupDate(localStorage.getItem('siste_backup'));
   }
@@ -2371,6 +2371,8 @@ recalc();
 updateUrlFromPrices();
 // Electron: last indeks fra fil ved oppstart
 if(_isElectron){
+  // Skjul backup-seksjon i Electron (data lagres som filer)
+  var bs=$('koBackupSection');if(bs)bs.style.display='none';
   window.electronStore.getIndex().then(function(idx){
     _dbCache.idx=idx||[];
     openKundeOversikt();
