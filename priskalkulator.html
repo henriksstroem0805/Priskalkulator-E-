@@ -553,7 +553,7 @@ async function tryUnlock(){
 </div>
 </div>
 <div id="koElectronBackup" style="padding:.6rem 1.2rem;border-top:1px solid var(--border);display:none;align-items:center;justify-content:space-between">
-<div style="font-size:.78rem;color:var(--muted)">Backup tas automatisk daglig i <strong>Dokumenter/Priskalkulator/backup/</strong></div>
+<div style="font-size:.78rem;color:var(--muted)">✓ Tilbud lagres som filer i lagringsmappen din. Daglig backup tas automatisk i <strong>backup/</strong>-undermappen.</div>
 <button onclick="$('dbImportInput').click()" style="font-size:.78rem;padding:.4rem .8rem;background:#f4f9e8;color:#4a7000;border:1px solid #90D000;border-radius:6px;cursor:pointer;font-weight:600">⬆ Importer backup</button>
 </div>
 </div></div>
@@ -1293,6 +1293,9 @@ async function velgLagringsmappe(){
     // Last inn fra fil og initialiser
     await fsLoadAllToCache();
     autoBackupFs();
+    // Vis filsystem-backup-info
+    var bs=$('koBackupSection');if(bs)bs.style.display='none';
+    var eb=$('koElectronBackup');if(eb)eb.style.display='flex';
     if(typeof openKundeOversikt==='function')openKundeOversikt();
   }catch(e){
     if(e.name==='AbortError')return;
@@ -2723,6 +2726,9 @@ if(_isElectron){
       if(ok){
         await fsLoadAllToCache();
         await autoBackupFs();
+        // Vis filsystem-backup-info i kundeoversikten
+        var bs=$('koBackupSection');if(bs)bs.style.display='none';
+        var eb=$('koElectronBackup');if(eb)eb.style.display='flex';
         openKundeOversikt();
       }else{
         // Vis setup-skjerm for å velge mappe
