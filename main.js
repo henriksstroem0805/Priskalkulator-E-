@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { autoUpdater } = require('electron-updater');
@@ -289,6 +289,22 @@ ipcMain.handle('app:installUpdate', () => {
 
 ipcMain.handle('app:getVersion', () => {
   return app.getVersion();
+});
+
+// Åpne URL i standard nettleser
+ipcMain.handle('app:openExternal', (event, url) => {
+  shell.openExternal(url);
+});
+
+// Fang opp alle nye vinduer og åpne dem i standard nettleser istedenfor
+app.on('web-contents-created', (event, contents) => {
+  contents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      shell.openExternal(url);
+      return { action: 'deny' };
+    }
+    return { action: 'allow' };
+  });
 });
 
 // Lagre backup-fil til backup-mappen

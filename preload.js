@@ -31,6 +31,7 @@ contextBridge.exposeInMainWorld('electronStore', {
   // App
   getVersion: () => ipcRenderer.invoke('app:getVersion'),
   installUpdate: () => ipcRenderer.invoke('app:installUpdate'),
+  openExternal: (url) => ipcRenderer.invoke('app:openExternal', url),
 
   // Update events
   onUpdateAvailable: (cb) => ipcRenderer.on('update-available', (e, version) => cb(version)),
