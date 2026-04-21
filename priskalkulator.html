@@ -2220,8 +2220,10 @@ async function saveDetaljertHtmlTilFs(data,html){
   try{
     var d=new Date();
     var dato=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    var safeName=((data.kunde||{}).navn||'tilbud').replace(/[^a-zA-ZæøåÆØÅ0-9 _-]/g,'').trim();
-    var filnavn='Tilbud_'+safeName+'_'+dato+'.html';
+    var tid=String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0');
+    var kundeNavn=(data._kundeNavn||(data.kunde||{}).navn||'tilbud').replace(/[^a-zA-ZæøåÆØÅ0-9 _-]/g,'').trim();
+    var byraaNavn=(data._byraaNavn||SELSKAPER[data.selskap||'eoa']||'').replace(/[^a-zA-ZæøåÆØÅ0-9 _-]/g,'').trim();
+    var filnavn=dato+'_'+kundeNavn+(byraaNavn?'_'+byraaNavn:'')+'_'+tid+'.html';
     await fsWriteFile(_fsTilbudDir,filnavn,html);
     console.log('Detaljert HTML lagret:',filnavn);
   }catch(e){console.warn('Kunne ikke lagre detaljert HTML:',e)}
