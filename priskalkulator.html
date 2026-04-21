@@ -1870,7 +1870,28 @@ function recalc(){
 }
 
 function fmtDate(d){if(!d)return'\u2013';return new Date(d).toLocaleDateString('nb-NO',{day:'numeric',month:'long',year:'numeric'})}
-function openTilbud(){window._tilbudGenerert=true;recalc();const t=new Date();if(!$('tilbudDato').value)$('tilbudDato').value=t.toISOString().split('T')[0];if(!$('tilbudGyldig').value){const g=new Date(t);g.setDate(g.getDate()+30);$('tilbudGyldig').value=g.toISOString().split('T')[0]}if(!$('tilbudNr').value)$('tilbudNr').value='T-'+t.getFullYear()+'-'+String(Math.floor(Math.random()*900)+100);if(!$('tilbudIntro').value||$('tilbudIntro').dataset.auto==='1'){const k=$('kundeNavn').value.trim()||'[Kundenavn]';var introTekst='Takk for hyggelig dialog. Vi har gleden av \u00e5 presentere f\u00f8lgende tilbud p\u00e5 regnskaps- og r\u00e5dgivningstjenester for '+k+'. Tilbudet er basert p\u00e5 oppgitt informasjon om virksomhetens omfang og behov.';var byraaVal=$('selskapSelect').value;if(byraaVal==='eoa'||byraaVal==='eof'){introTekst+='\n\nEika \u00d8konomi \u00d8st er et regionalt konsern innen regnskap og \u00f8konomisk r\u00e5dgivning, med over 20 ansatte og sterk lokal tilstedev\u00e6relse i Indre \u00d8stfold, Follo og Romerike. Vi er representert gjennom Eika \u00d8konomi Askim AS og Eika \u00d8konomi Follo AS, og er tett p\u00e5 kundene v\u00e5re der de driver sin virksomhet. Vi kombinerer personlig r\u00e5dgivning med effektive, digitale l\u00f8sninger \u2013 slik f\u00e5r kundene v\u00e5re bedre oversikt, tryggere beslutninger og mer tid til \u00e5 utvikle egen virksomhet. Vi kjenner det lokale n\u00e6ringslivet, tilpasser oss kundens behov og er en proaktiv sparringspartner som bidrar til vekst og verdiskaping p\u00e5 lang sikt.'}$('tilbudIntro').value=introTekst;$('tilbudIntro').dataset.auto='1'}renderTilbud();$('tilbudModal').classList.add('active');document.body.style.overflow='hidden';document.querySelectorAll('.tilbud-edit input,.tilbud-edit textarea').forEach(function(e){e.removeEventListener('input',renderTilbud);e.addEventListener('input',renderTilbud)});$('tilbudIntro').addEventListener('input',function(){this.dataset.auto='0'})}function closeTilbud(){$('tilbudModal').classList.remove('active');document.body.style.overflow=''}
+function openTilbud(){window._tilbudGenerert=true;recalc();const t=new Date();if(!$('tilbudDato').value)$('tilbudDato').value=t.toISOString().split('T')[0];if(!$('tilbudGyldig').value){const g=new Date(t);g.setDate(g.getDate()+30);$('tilbudGyldig').value=g.toISOString().split('T')[0]}if(!$('tilbudNr').value)$('tilbudNr').value='T-'+t.getFullYear()+'-'+String(Math.floor(Math.random()*900)+100);if(!$('tilbudIntro').value||$('tilbudIntro').dataset.auto==='1'){const k=$('kundeNavn').value.trim()||'[Kundenavn]';var introTekst='Takk for hyggelig dialog. Vi har gleden av \u00e5 presentere f\u00f8lgende tilbud p\u00e5 regnskaps- og r\u00e5dgivningstjenester for '+k+'. Tilbudet er basert p\u00e5 oppgitt informasjon om virksomhetens omfang og behov.';var byraaVal=$('selskapSelect').value;if(byraaVal==='eoa'||byraaVal==='eof'){introTekst+='\n\nEika \u00d8konomi \u00d8st er et regionalt konsern innen regnskap og \u00f8konomisk r\u00e5dgivning, med over 20 ansatte og sterk lokal tilstedev\u00e6relse i Indre \u00d8stfold, Follo og Romerike. Vi er representert gjennom Eika \u00d8konomi Askim AS og Eika \u00d8konomi Follo AS, og er tett p\u00e5 kundene v\u00e5re der de driver sin virksomhet. Vi kombinerer personlig r\u00e5dgivning med effektive, digitale l\u00f8sninger \u2013 slik f\u00e5r kundene v\u00e5re bedre oversikt, tryggere beslutninger og mer tid til \u00e5 utvikle egen virksomhet. Vi kjenner det lokale n\u00e6ringslivet, tilpasser oss kundens behov og er en proaktiv sparringspartner som bidrar til vekst og verdiskaping p\u00e5 lang sikt.'}$('tilbudIntro').value=introTekst;$('tilbudIntro').dataset.auto='1'}renderTilbud();$('tilbudModal').classList.add('active');document.body.style.overflow='hidden';document.querySelectorAll('.tilbud-edit input,.tilbud-edit textarea').forEach(function(e){e.removeEventListener('input',renderTilbud);e.addEventListener('input',renderTilbud)});$('tilbudIntro').addEventListener('input',function(){this.dataset.auto='0'});
+// Lagre detaljert PDF i "genererte tilbud"-mappen (kun Electron)
+if(_isElectron){saveDetaljertPDF()}
+}function closeTilbud(){$('tilbudModal').classList.remove('active');document.body.style.overflow=''}
+
+function saveDetaljertPDF(){
+  if(!_isElectron)return;
+  // Sørg for at tilbudet er lagret først
+  saveTilbudToDb(true);
+  // Hent det aktive tilbudet og generer PDF fra detaljvisningen
+  setTimeout(function(){
+    var id=window._aktivTilbudId;
+    if(!id)return;
+    window.electronStore.getTilbud(id).then(function(data){
+      if(!data)return;
+      var html=_buildDetaljertHtml(data);
+      window.electronStore.saveTilbudPDF(html,data.kunde&&data.kunde.navn||'tilbud').then(function(result){
+        if(result.ok)console.log('Detaljert PDF lagret:',result.path);
+      });
+    });
+  },500);
+}
 
 function renderTilbud(){
   var sn=getSelskapNavn();$('tbSelskap').textContent=sn;$('tbSigSelskapLabel').textContent='For '+sn;
@@ -1912,7 +1933,20 @@ function renderTilbud(){
 }
 
 // === SKRIVEBESKYTTET TILBUDSVISNING I NY FANE ===
+function _buildDetaljertHtml(data){
+  var html=_renderReadOnlyTilbudHtml(data);
+  return html;
+}
 function _renderReadOnlyTilbud(data){
+  var html=_renderReadOnlyTilbudHtml(data);
+  var w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  if(_isElectron){
+    window.electronStore.saveTilbudPDF(html,(data.kunde||{}).navn||'tilbud').then(function(){});
+  }
+}
+function _renderReadOnlyTilbudHtml(data){
     var d=data._beregnetDetalj||{};
     var b=data.beregnet||{};
     var kunde=data.kunde||{};
@@ -2058,17 +2092,7 @@ function _renderReadOnlyTilbud(data){
     html+='</div>';
     html+='<button class="print-btn" onclick="window.print()">🖨 Skriv ut / PDF</button>';
     html+='</body></html>';
-
-    var w=window.open('','_blank');
-    w.document.write(html);
-    w.document.close();
-
-    // I Electron: lagre også PDF i genererte tilbud-mappen
-    if(_isElectron){
-      window.electronStore.saveTilbudPDF(html,kunde.navn||'tilbud').then(function(result){
-        if(result.ok)console.log('PDF lagret:',result.path);
-      });
-    }
+    return html;
 }
 
 function openReadOnlyTilbud(id){
