@@ -2132,25 +2132,32 @@ function recalc(){
 
 function fmtDate(d){if(!d)return'\u2013';return new Date(d).toLocaleDateString('nb-NO',{day:'numeric',month:'long',year:'numeric'})}
 function openTilbud(){window._tilbudGenerert=true;recalc();const t=new Date();if(!$('tilbudDato').value)$('tilbudDato').value=t.toISOString().split('T')[0];if(!$('tilbudGyldig').value){const g=new Date(t);g.setDate(g.getDate()+30);$('tilbudGyldig').value=g.toISOString().split('T')[0]}if(!$('tilbudNr').value)$('tilbudNr').value='T-'+t.getFullYear()+'-'+String(Math.floor(Math.random()*900)+100);if(!$('tilbudIntro').value||$('tilbudIntro').dataset.auto==='1'){const k=$('kundeNavn').value.trim()||'[Kundenavn]';var introTekst='Takk for hyggelig dialog. Vi har gleden av \u00e5 presentere f\u00f8lgende tilbud p\u00e5 regnskaps- og r\u00e5dgivningstjenester for '+k+'. Tilbudet er basert p\u00e5 oppgitt informasjon om virksomhetens omfang og behov.';var byraaVal=$('selskapSelect').value;if(byraaVal==='eoa'||byraaVal==='eof'){introTekst+='\n\nEika \u00d8konomi \u00d8st er et regionalt konsern innen regnskap og \u00f8konomisk r\u00e5dgivning, med over 20 ansatte og sterk lokal tilstedev\u00e6relse i Indre \u00d8stfold, Follo og Romerike. Vi er representert gjennom Eika \u00d8konomi Askim AS og Eika \u00d8konomi Follo AS, og er tett p\u00e5 kundene v\u00e5re der de driver sin virksomhet. Vi kombinerer personlig r\u00e5dgivning med effektive, digitale l\u00f8sninger \u2013 slik f\u00e5r kundene v\u00e5re bedre oversikt, tryggere beslutninger og mer tid til \u00e5 utvikle egen virksomhet. Vi kjenner det lokale n\u00e6ringslivet, tilpasser oss kundens behov og er en proaktiv sparringspartner som bidrar til vekst og verdiskaping p\u00e5 lang sikt.'}$('tilbudIntro').value=introTekst;$('tilbudIntro').dataset.auto='1'}renderTilbud();$('tilbudModal').classList.add('active');document.body.style.overflow='hidden';document.querySelectorAll('.tilbud-edit input,.tilbud-edit textarea').forEach(function(e){e.removeEventListener('input',renderTilbud);e.addEventListener('input',renderTilbud)});$('tilbudIntro').addEventListener('input',function(){this.dataset.auto='0'});
-// Lagre detaljert PDF i "genererte tilbud"-mappen (kun Electron)
-if(_isElectron){saveDetaljertPDF()}
+// Lagre detaljert PDF/HTML i "genererte tilbud"-mappen
+if(_isElectron||_useFileSystem){saveDetaljertPDF()}
 }function closeTilbud(){$('tilbudModal').classList.remove('active');document.body.style.overflow=''}
 
 function saveDetaljertPDF(){
-  if(!_isElectron)return;
+  if(!_isElectron&&!_useFileSystem)return;
   // Sørg for at tilbudet er lagret først
   saveTilbudToDb(true);
-  // Hent det aktive tilbudet og generer PDF fra detaljvisningen
+  // Hent det aktive tilbudet og generer fil fra detaljvisningen
   setTimeout(function(){
     var id=window._aktivTilbudId;
     if(!id)return;
-    window.electronStore.getTilbud(id).then(function(data){
+    if(_isElectron){
+      window.electronStore.getTilbud(id).then(function(data){
+        if(!data)return;
+        var html=_buildDetaljertHtml(data);
+        window.electronStore.saveTilbudPDF(html,data.kunde&&data.kunde.navn||'tilbud').then(function(result){
+          if(result.ok)console.log('Detaljert PDF lagret:',result.path);
+        });
+      });
+    }else if(_useFileSystem){
+      var data=_dbCache.tilbud[id];
       if(!data)return;
       var html=_buildDetaljertHtml(data);
-      window.electronStore.saveTilbudPDF(html,data.kunde&&data.kunde.navn||'tilbud').then(function(result){
-        if(result.ok)console.log('Detaljert PDF lagret:',result.path);
-      });
-    });
+      saveDetaljertHtmlTilFs(data,html);
+    }
   },500);
 }
 
@@ -2205,7 +2212,19 @@ function _renderReadOnlyTilbud(data){
   w.document.close();
   if(_isElectron){
     window.electronStore.saveTilbudPDF(html,(data.kunde||{}).navn||'tilbud').then(function(){});
+  }else if(_useFileSystem){
+    saveDetaljertHtmlTilFs(data,html);
   }
+}
+async function saveDetaljertHtmlTilFs(data,html){
+  try{
+    var d=new Date();
+    var dato=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    var safeName=((data.kunde||{}).navn||'tilbud').replace(/[^a-zA-ZæøåÆØÅ0-9 _-]/g,'').trim();
+    var filnavn='Tilbud_'+safeName+'_'+dato+'.html';
+    await fsWriteFile(_fsTilbudDir,filnavn,html);
+    console.log('Detaljert HTML lagret:',filnavn);
+  }catch(e){console.warn('Kunne ikke lagre detaljert HTML:',e)}
 }
 function _renderReadOnlyTilbudHtml(data){
     var d=data._beregnetDetalj||{};
