@@ -1,6 +1,6 @@
 {
   "name": "priskalkulator",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Priskalkulator – Eika Økonomi",
   "main": "main.js",
   "scripts": {
