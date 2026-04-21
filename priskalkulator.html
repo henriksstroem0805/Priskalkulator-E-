@@ -547,24 +547,26 @@ async function tryUnlock(){
 </div>
 <div style="background:#fff;border-radius:14px;padding:1.5rem;border:2px solid #90D000;box-shadow:0 2px 8px rgba(74,112,0,.1)">
 <div style="display:inline-block;background:#4a7000;color:#fff;font-size:.85rem;font-weight:700;width:28px;height:28px;line-height:28px;text-align:center;border-radius:50%;margin-bottom:.6rem">3</div>
-<h4 style="margin-bottom:.5rem;color:#2a3318;font-size:1.05rem">Kopier din lenke</h4>
-<p style="font-size:.92rem;color:#444;line-height:1.7">Klikk <strong>🔗 Kopier min lenke</strong> i prisinnstillingene. Lagre denne som bokmerke — den inneholder dine priser og oppdateres automatisk.</p>
+<h4 style="margin-bottom:.5rem;color:#2a3318;font-size:1.05rem">Velg eller opprett kunde</h4>
+<p style="font-size:.92rem;color:#444;line-height:1.7">I kundeoversikten klikker du på en kunde for å fortsette et tilbud, eller <strong>+ Ny kunde</strong> for å starte et nytt.</p>
 </div>
 <div style="background:#fff;border-radius:14px;padding:1.5rem;border:2px solid #90D000;box-shadow:0 2px 8px rgba(74,112,0,.1)">
 <div style="display:inline-block;background:#4a7000;color:#fff;font-size:.85rem;font-weight:700;width:28px;height:28px;line-height:28px;text-align:center;border-radius:50%;margin-bottom:.6rem">4</div>
 <h4 style="margin-bottom:.5rem;color:#2a3318;font-size:1.05rem">Lag tilbud</h4>
-<p style="font-size:.92rem;color:#444;line-height:1.7">Fyll inn kundeinfo og tjenester. Tilbudet lagres automatisk. Klikk <strong>📄 Generer tilbudsark</strong> for å lage ferdig tilbud.</p>
+<p style="font-size:.92rem;color:#444;line-height:1.7">Fyll inn kundeinfo og tjenester. Tilbudet lagres automatisk som fil. Klikk <strong>📄 Generer tilbudsark</strong> for å lage ferdig tilbud og PDF.</p>
 </div>
 </div>
 
 <h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Kundeoversikt</h3>
 <div style="background:#f8faf4;border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
-<p style="margin-bottom:.8rem;font-size:.95rem">Når du åpner priskalkulatoren ser du en <strong>kundeoversikt</strong> med alle lagrede kunder.</p>
+<p style="margin-bottom:.8rem;font-size:.95rem">Når du åpner programmet ser du en <strong>kundeoversikt</strong> med alle lagrede kunder, gruppert per organisasjon.</p>
 <ul style="margin-left:1.4rem;margin-bottom:.5rem;font-size:.93rem">
-<li style="margin-bottom:.4rem"><strong>Klikk på et kundekort</strong> for å laste inn tilbudet og fortsette der du slapp</li>
-<li style="margin-bottom:.4rem"><strong>"+ Ny kunde"</strong> starter en tom kalkulator for ny kunde</li>
-<li style="margin-bottom:.4rem"><strong>Søkefeltet</strong> filtrerer kunder på navn eller org.nr</li>
-<li style="margin-bottom:.4rem">Statistikken øverst viser totalt antall kunder, omsetning og status</li>
+<li style="margin-bottom:.4rem"><strong>Klikk på et kundekort</strong> for å ekspandere og se alle tilbud for denne kunden</li>
+<li style="margin-bottom:.4rem"><strong>Fortsett</strong> — åpner et tilbud under arbeid i kalkulatoren</li>
+<li style="margin-bottom:.4rem"><strong>Vis tilbud</strong> — åpner et generert tilbud som skrivebeskyttet visning i ny fane (kan brukes på skjerm 2 for sammenligning)</li>
+<li style="margin-bottom:.4rem"><strong>Rediger</strong> — åpner et generert tilbud i kalkulatoren for endringer</li>
+<li style="margin-bottom:.4rem"><strong>+ Nytt tilbud for denne kunden</strong> — lager et nytt tilbud med samme kundeinfo (ved revisjon)</li>
+<li style="margin-bottom:.4rem"><strong>Søkefeltet</strong> filtrerer på navn eller org.nr</li>
 </ul>
 </div>
 
@@ -578,21 +580,19 @@ async function tryUnlock(){
 <li style="margin-bottom:.4rem"><strong>Intern kostnad</strong> — timekostnad og overhead for dekningsgrad</li>
 </ul>
 <div style="background:#e8f5e9;border-radius:10px;padding:1rem;border-left:4px solid #2a7000">
-<strong style="color:#2a7000">Viktig:</strong> Etter prisendringer, klikk <strong>🔗 Kopier min lenke</strong> og oppdater bokmerket ditt. Dette sikrer at dine priser alltid er med i lenken.
+<strong style="color:#2a7000">Merk:</strong> Prisendringene lagres i programmet og gjelder kun for ditt byrå. Du trenger ikke gjøre noe for å beholde dem mellom hver gang du bruker programmet.
 </div>
 </div>
 
 <h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Automatisk lagring</h3>
 <div style="background:#f8faf4;border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
-<p style="margin-bottom:.8rem;font-size:.95rem">Tilbud lagres <strong>automatisk</strong> i nettleseren din mens du jobber.</p>
+<p style="margin-bottom:.8rem;font-size:.95rem">Tilbud lagres <strong>automatisk</strong> som JSON-filer mens du jobber.</p>
 <ul style="margin-left:1.4rem;margin-bottom:.8rem;font-size:.93rem">
 <li style="margin-bottom:.4rem">Lagring skjer automatisk når kundenavn er fylt inn</li>
 <li style="margin-bottom:.4rem">Du ser <strong>"Lagret ✓"</strong> i prisoversikten når det er lagret</li>
-<li style="margin-bottom:.4rem">Kunder med samme org.nr oppdateres automatisk (ingen duplikater)</li>
+<li style="margin-bottom:.4rem">Filene ligger i <strong>Dokumenter/Priskalkulator/genererte tilbud/</strong></li>
+<li style="margin-bottom:.4rem">Flere tilbud per kunde støttes — nye versjoner overskriver ikke gamle</li>
 </ul>
-<div style="background:#fff8e1;border-radius:10px;padding:1rem;border-left:4px solid #e8a735">
-<strong style="color:#e8a735">Merk:</strong> Kundene lagres lokalt i nettleseren. Bruk <strong>samme nettleser og PC</strong> for å finne dem igjen. Ta jevnlig backup via <strong>⬇ Eksporter backup</strong> i kundeoversikten.
-</div>
 </div>
 
 <h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Generere tilbudsark</h3>
@@ -601,48 +601,61 @@ async function tryUnlock(){
 <li style="margin-bottom:.5rem">Fyll inn kundeinfo, velg tjenester og juster volum</li>
 <li style="margin-bottom:.5rem">Klikk <strong>📄 Generer tilbudsark</strong></li>
 <li style="margin-bottom:.5rem">Rediger tilbudstekst, dato og tilbudsnummer</li>
-<li style="margin-bottom:.5rem">Klikk <strong>Skriv ut / PDF</strong> for å lagre som PDF eller skrive ut</li>
+<li style="margin-bottom:.5rem">Klikk <strong>Skriv ut / PDF</strong> for å lagre tilbudsarket som PDF eller skrive ut</li>
 </ol>
+<div style="background:#e8f5e9;border-radius:10px;padding:1rem;border-left:4px solid #2a7000;margin-top:.8rem">
+<strong style="color:#2a7000">Automatisk PDF:</strong> Når du klikker Generer tilbudsark lagres en detaljert PDF med alle parametre automatisk i <strong>Dokumenter/Priskalkulator/genererte tilbud/</strong>.
+</div>
 <p style="margin-top:.8rem;font-size:.93rem">Kunden markeres som <strong style="color:#2a7000">Tilbud generert</strong> i kundeoversikten.</p>
 </div>
 
 <h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Revidere tilbud</h3>
 <div style="background:#f8faf4;border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
-<p style="margin-bottom:.8rem;font-size:.95rem">For å revidere et eksisterende tilbud (f.eks. etter 6 måneder):</p>
+<p style="margin-bottom:.8rem;font-size:.95rem">Slik reviderer du et eksisterende tilbud (f.eks. etter 6 måneder):</p>
 <ol style="margin-left:1.4rem;font-size:.93rem">
 <li style="margin-bottom:.5rem">Åpne kundeoversikten og klikk på kunden</li>
-<li style="margin-bottom:.5rem">Alle verdier lastes inn nøyaktig som de var</li>
-<li style="margin-bottom:.5rem">Juster volum, tjenester eller priser etter behov</li>
-<li style="margin-bottom:.5rem">Generer nytt tilbudsark — endringene lagres automatisk</li>
+<li style="margin-bottom:.5rem">Klikk <strong>+ Nytt tilbud for denne kunden</strong> for å bevare gammelt tilbud og lage en ny versjon</li>
+<li style="margin-bottom:.5rem">Alle kundedetaljer beholdes — juster volum, tjenester eller priser</li>
+<li style="margin-bottom:.5rem">Generer nytt tilbudsark</li>
 </ol>
+<div style="background:#e8f5e9;border-radius:10px;padding:1rem;border-left:4px solid #2a7000;margin-top:.8rem">
+<strong style="color:#2a7000">Sammenligning:</strong> Åpne fjorårets tilbud med <strong>Vis tilbud</strong> på én skjerm og jobb med nytt tilbud på den andre — du ser alle parametre side om side.
+</div>
 </div>
 
-<h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Backup og overføring</h3>
+<h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Mappestruktur på PCen</h3>
+<div style="background:#f8faf4;border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
+<p style="margin-bottom:.8rem;font-size:.95rem">Programmet oppretter denne mappestrukturen under <strong>Dokumenter/Priskalkulator/</strong>:</p>
+<ul style="margin-left:1.4rem;margin-bottom:.5rem;font-size:.93rem;list-style:none">
+<li style="margin-bottom:.4rem">📁 <strong>genererte tilbud/</strong> — alle tilbud (JSON) og PDF-er</li>
+<li style="margin-bottom:.4rem">📁 <strong>backup/</strong> — automatiske daglige backup-filer</li>
+<li style="margin-bottom:.4rem">📄 tilbud_index.json — indeks over alle tilbud</li>
+</ul>
+<p style="font-size:.88rem;color:#555;margin-top:.5rem">Du kan se på filene selv, men det er ikke nødvendig — alt håndteres automatisk av programmet.</p>
+</div>
+
+<h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Automatisk backup</h3>
+<div style="background:#f8faf4;border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
+<p style="margin-bottom:.8rem;font-size:.95rem">Programmet tar <strong>automatisk backup</strong> av alle tilbud hver dag — du trenger ikke gjøre noe.</p>
+<ul style="margin-left:1.4rem;margin-bottom:.5rem;font-size:.93rem">
+<li style="margin-bottom:.4rem">Backup tas automatisk ved oppstart (maks én per dag)</li>
+<li style="margin-bottom:.4rem">Filene lagres i <strong>Dokumenter/Priskalkulator/backup/</strong></li>
+<li style="margin-bottom:.4rem">Backup eldre enn 30 dager slettes automatisk</li>
+<li style="margin-bottom:.4rem">Bruk <strong>⬆ Importer backup</strong> nederst i kundeoversikten hvis du trenger å gjenopprette</li>
+</ul>
+<div style="background:#e8f5e9;border-radius:10px;padding:1rem;border-left:4px solid #2a7000;margin-top:.8rem">
+<strong style="color:#2a7000">Overføre til annen PC:</strong> Kopier hele <strong>Dokumenter/Priskalkulator/</strong>-mappen til den andre PCen, eller bruk en backup-fil fra backup-mappen og importer den.
+</div>
+</div>
+
+<h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Oppdateringer</h3>
 <div style="background:#f8faf4;border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:1rem">
-<p style="margin-bottom:.8rem;font-size:.95rem">Kundedataene lagres lokalt i nettleseren. For å unngå datatap anbefaler vi å ta backup jevnlig.</p>
-
-<h4 style="font-size:.9rem;color:var(--accent-dark);margin-bottom:.5rem">Slik tar du backup:</h4>
-<ol style="margin-left:1.4rem;font-size:.93rem;margin-bottom:1rem">
-<li style="margin-bottom:.5rem">Opprett en fast mappe på PCen din for backupfiler, f.eks. <strong>Dokumenter/Priskalkulator Backup</strong></li>
-<li style="margin-bottom:.5rem">Klikk <strong>⬇ Eksporter backup</strong> nederst i kundeoversikten</li>
-<li style="margin-bottom:.5rem">Flytt den nedlastede filen fra Nedlastinger til backup-mappen din</li>
-<li style="margin-bottom:.5rem">Filen inneholder alle kunder og tilbud — den nyeste filen er alltid komplett</li>
-</ol>
-
-<h4 style="font-size:.9rem;color:var(--accent-dark);margin-bottom:.5rem">Gjenopprette fra backup:</h4>
-<ol style="margin-left:1.4rem;font-size:.93rem;margin-bottom:1rem">
-<li style="margin-bottom:.5rem">Klikk <strong>⬆ Importer backup</strong> nederst i kundeoversikten</li>
-<li style="margin-bottom:.5rem">Velg den nyeste backupfilen fra backup-mappen din</li>
-<li style="margin-bottom:.5rem">Alle kunder og tilbud lastes inn igjen</li>
-</ol>
-
-<div style="background:#fff8e1;border-radius:10px;padding:1rem;border-left:4px solid #e8a735;margin-bottom:.8rem">
-<strong style="color:#e8a735">Backup-påminnelse:</strong> Nederst i kundeoversikten vises dato for siste backup. Hvis det er mer enn 30 dager siden, vises en rød påminnelse om å ta ny backup. Vi anbefaler å ta backup minst én gang i måneden.
-</div>
-
-<div style="background:#e8f5e9;border-radius:10px;padding:1rem;border-left:4px solid #2a7000">
-<strong style="color:#2a7000">Tips:</strong> Bruk backup-funksjonen også for å overføre kundedata mellom PCer — eksporter fra én PC og importer på en annen.
-</div>
+<p style="margin-bottom:.8rem;font-size:.95rem">Programmet sjekker automatisk etter nye versjoner ved oppstart.</p>
+<ul style="margin-left:1.4rem;margin-bottom:.5rem;font-size:.93rem">
+<li style="margin-bottom:.4rem">Når en ny versjon er tilgjengelig, vises et <strong>grønt banner øverst</strong></li>
+<li style="margin-bottom:.4rem">Klikk <strong>Last ned oppdatering</strong> for å hente ny versjon</li>
+<li style="margin-bottom:.4rem">Installer den nye versjonen — dataene dine beholdes</li>
+</ul>
 </div>
 
 </div>
