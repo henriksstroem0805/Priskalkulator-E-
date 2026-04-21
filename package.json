@@ -13,7 +13,9 @@
   "private": true,
   "devDependencies": {
     "electron": "^33.0.0",
-    "electron-builder": "^25.0.0"
+    "electron-builder": "^25.0.0",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.5"
   },
   "dependencies": {
     "electron-updater": "^6.3.0"
@@ -30,11 +32,12 @@
       "priskalkulator.html",
       "*.png",
       "*.webp",
+      "*.ico",
       "package.json"
     ],
     "win": {
       "target": "nsis",
-      "icon": null
+      "icon": "icon.ico"
     },
     "nsis": {
       "oneClick": true,

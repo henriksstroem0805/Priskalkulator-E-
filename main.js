@@ -38,6 +38,7 @@ function createWindow() {
     width: 1400,
     height: 900,
     title: 'Priskalkulator – Eika Økonomi',
+    icon: path.join(__dirname, 'icon.ico'),
     autoHideMenuBar: true,
     menuBarVisible: false,
     webPreferences: {
