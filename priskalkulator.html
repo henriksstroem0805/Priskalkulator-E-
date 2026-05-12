@@ -402,6 +402,7 @@ async function tryUnlock(){
 </div>
 <div class="bilag-calc" id="bilagCalcBox" style="display:none"><div class="calc-detail" id="bilagCalcDetail"></div><div class="calc-result" id="bilagCalcResult"></div></div>
 <div class="bilag-calc" id="internTidCalcBox" style="display:none"><div class="calc-detail" id="internTidCalcDetail"></div><div class="calc-result" id="internTidCalcResult"></div></div>
+<div class="bilag-calc" id="kursInterntidBox" style="display:none;background:#fff8e1;border-left:3px solid #e8a735"><div class="calc-detail" id="kursInterntidDetail"></div><div class="calc-result" id="kursInterntidResult"></div></div>
 <div class="toggle-row" style="margin-top:.75rem"><div class="label-text">MVA-pliktig (terminmva)<small id="lbl-mvaTermin">450 kr/mnd (5 400 kr/år)</small></div><span class="price-tag" id="tag-mvaTermin">450 kr</span><label class="switch"><input type="checkbox" id="mvaTermin" onchange="if(this.checked){$('mvaAar').checked=false}recalc()"><span class="slider"></span></label></div>
 <div class="toggle-row"><div class="label-text">MVA-pliktig (årstermin)<small id="lbl-mvaAar">1 100 kr/år</small></div><span class="price-tag" id="tag-mvaAar">92 kr</span><label class="switch"><input type="checkbox" id="mvaAar" onchange="if(this.checked){$('mvaTermin').checked=false}recalc()"><span class="slider"></span></label></div>
 <div class="toggle-row"><div class="label-text">Omvendt MVA<small id="lbl-omvendtMva">3 600 kr/år (300 kr/mnd)</small></div><span class="price-tag" id="tag-omvendtMva">300 kr</span><label class="switch"><input type="checkbox" id="omvendtMva" onchange="recalc()"><span class="slider"></span></label></div>
@@ -2258,11 +2259,13 @@ function recalc(){
   var bilagStkPris=Math.round(minPr*timepris/60*100)/100;
   const internTidTimer=getInternTid(bilag);
   const internTidPris=bilag>0?Math.ceil(internTidTimer*timepris/10)*10:0;
-  // Kurs og avtalt interntid: timepris \u00d7 timer (kun intern visning, ikke i tilbud)
+  // Kurs og avtalt interntid: timepris \u00d7 timer (alltid synlig i kalkulator, ikke i tilbud)
   const kursTimepris=P.kursTimepris||2500,kursTimer=P.kursTimer||1.5;
-  const kursInterntidPris=bilag>0?Math.round(kursTimepris*kursTimer):0;
+  const kursInterntidPris=Math.round(kursTimepris*kursTimer);
   if(bilag>0){$('bilagCalcBox').style.display='block';$('bilagCalcDetail').innerHTML=bilag+' bilag \u00d7 '+minPr+' min = '+bilagTimer.toFixed(1)+' timer \u00d7 '+fmt(timepris)+' kr/t<br>Stk.pris pr bilag: <strong>'+bilagStkPris.toFixed(2)+' kr</strong>';$('bilagCalcResult').textContent=fmt(bilagPris)+' kr/mnd'}else{$('bilagCalcBox').style.display='none'}
-  if(bilag>0){$('internTidCalcBox').style.display='block';var iLines=[];if(internTidTimer>0)iLines.push('Trappetrinn: '+bilag+' bilag \u2192 '+internTidTimer.toFixed(2)+' t \u00d7 '+fmt(timepris)+' kr/t = '+fmt(internTidPris)+' kr/mnd');iLines.push('<em>Kurs og avtalt interntid: '+fmt(kursTimepris)+' kr/t \u00d7 '+kursTimer+' t = '+fmt(kursInterntidPris)+' kr/mnd <span style="color:#888">(intern \u2013 ikke i tilbud)</span></em>');$('internTidCalcDetail').innerHTML=iLines.join('<br>');$('internTidCalcResult').textContent=fmt(internTidPris)+' kr/mnd'}else{$('internTidCalcBox').style.display='none'}
+  if(bilag>0&&internTidTimer>0){$('internTidCalcBox').style.display='block';$('internTidCalcDetail').innerHTML='Interntid: '+bilag+' bilag \u2192 '+internTidTimer.toFixed(2)+' t \u00d7 '+fmt(timepris)+' kr/t';$('internTidCalcResult').textContent=fmt(internTidPris)+' kr/mnd'}else{$('internTidCalcBox').style.display='none'}
+  // Egen post for kurs og avtalt interntid (alltid synlig, intern)
+  if($('kursInterntidBox')){$('kursInterntidBox').style.display='block';$('kursInterntidDetail').innerHTML='Kurs og avtalt interntid: '+fmt(kursTimepris)+' kr/t \u00d7 '+kursTimer+' t';$('kursInterntidResult').innerHTML=fmt(kursInterntidPris)+' kr/mnd <span style="font-size:.7rem;color:#888;font-weight:400">(intern \u2013 ikke i tilbud)</span>'}
   const fakturaAnt=num('fakturaMnd'),minPrFaktura=num('minPrFaktura'),timeprisFakt=P.timeprisFaktura;
   const fakturaTimer=fakturaAnt*minPrFaktura/60,fakturaPris=Math.ceil(fakturaTimer*timeprisFakt/10)*10;
   var fakturaStkPris=Math.round(minPrFaktura*timeprisFakt/60*100)/100;
