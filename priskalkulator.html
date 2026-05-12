@@ -2404,9 +2404,15 @@ function renderTilbud(){
   // Build price table
   var h='';
   var regTot=S.bilagPris+S.fakturaPris+S.internTidPris+S.mvaPris+S.omvendtMvaPris+S.prosjPris;
-  if(regTot>0){var regDeler=[];if(S.fakturaPris>0)regDeler.push('fakturering');if(S.bilagPris>0)regDeler.push('bokf\u00f8ring og avstemming');if(S.mvaPris>0||S.omvendtMvaPris>0)regDeler.push('merverdiavgift');if(S.prosjPris>0)regDeler.push('prosjektregnskap');var regBesk=regDeler.length>0?regDeler.join(', '):'regnskapsf\u00f8ring';regBesk=regBesk.charAt(0).toUpperCase()+regBesk.slice(1);h+='<tr><td>L\u00f8pende regnskapsf\u00f8ring<br><small style="color:var(--muted);font-weight:400">'+regBesk+'</small></td><td>'+fmt(regTot)+' kr/mnd</td></tr>';}
   var lonnTot=S.lonnBasis+S.lr+S.sammenstillingMnd+S.ek;
-  if(lonnTot>0){var lonnDeler=['l\u00f8nnskj\u00f8ring'];if(S.lr>0)lonnDeler.push('a-melding og terminoppgave');if(S.sammenstillingMnd>0)lonnDeler.push('sammenstillingsoppgave');var lonnBesk=lonnDeler.join(', ');lonnBesk=lonnBesk.charAt(0).toUpperCase()+lonnBesk.slice(1);h+='<tr><td>L\u00f8nnsadministrasjon<br><small style="color:var(--muted);font-weight:400">'+lonnBesk+'</small></td><td>'+fmt(lonnTot)+' kr/mnd</td></tr>';}
+  var avtaltTot=regTot+lonnTot;
+  if(avtaltTot>0){
+    var deler=[];
+    if(regTot>0)deler.push('Regnskapstjenester');
+    if(lonnTot>0)deler.push('L\u00f8nnsadministrasjon');
+    var avtaltBesk=deler.join('. ')+(deler.length>0?'.':'');
+    h+='<tr><td>Avtalt Tjenesteleveranse<br><small style="color:var(--muted);font-weight:400">'+avtaltBesk+'</small></td><td>'+fmt(avtaltTot)+' kr/mnd</td></tr>';
+  }
   if(S.aarsAarlig>0){
     var aarsDeler=[];
     if(chk('aarsoppgjorAS'))aarsDeler.push('\u00e5rsregnskap');
@@ -2713,9 +2719,15 @@ function exportWord(){
   // Price table
   html+='<table class="price-table"><thead><tr><th style="width:60%">Tjeneste</th><th>Pris</th></tr></thead><tbody>';
   var regTot=S.bilagPris+S.fakturaPris+S.internTidPris+S.mvaPris+S.omvendtMvaPris+S.prosjPris;
-  if(regTot>0){var regDeler=[];if(S.fakturaPris>0)regDeler.push('fakturering');if(S.bilagPris>0)regDeler.push('bokf\u00f8ring og avstemming');if(S.mvaPris>0||S.omvendtMvaPris>0)regDeler.push('merverdiavgift');if(S.prosjPris>0)regDeler.push('prosjektregnskap');var regBesk=regDeler.length>0?regDeler.join(', '):'regnskapsf\u00f8ring';regBesk=regBesk.charAt(0).toUpperCase()+regBesk.slice(1);html+='<tr><td>L\u00f8pende regnskapsf\u00f8ring<br><span class="small">'+regBesk+'</span></td><td>'+fmt(regTot)+' kr/mnd</td></tr>';}
   var lonnTot=S.lonnBasis+S.lr+S.sammenstillingMnd+S.ek;
-  if(lonnTot>0){var lonnDeler=['l\u00f8nnskj\u00f8ring'];if(S.lr>0)lonnDeler.push('a-melding og terminoppgave');if(S.sammenstillingMnd>0)lonnDeler.push('sammenstillingsoppgave');var lonnBesk=lonnDeler.join(', ');lonnBesk=lonnBesk.charAt(0).toUpperCase()+lonnBesk.slice(1);html+='<tr><td>L\u00f8nnsadministrasjon<br><span class="small">'+lonnBesk+'</span></td><td>'+fmt(lonnTot)+' kr/mnd</td></tr>';}
+  var avtaltTot=regTot+lonnTot;
+  if(avtaltTot>0){
+    var deler=[];
+    if(regTot>0)deler.push('Regnskapstjenester');
+    if(lonnTot>0)deler.push('L\u00f8nnsadministrasjon');
+    var avtaltBesk=deler.join('. ')+(deler.length>0?'.':'');
+    html+='<tr><td>Avtalt Tjenesteleveranse<br><span class="small">'+avtaltBesk+'</span></td><td>'+fmt(avtaltTot)+' kr/mnd</td></tr>';
+  }
   if(S.aarsAarlig>0){
     var aarsDeler2=[];
     if(chk('aarsoppgjorAS'))aarsDeler2.push('\u00e5rsregnskap');
