@@ -559,6 +559,14 @@ async function tryUnlock(){
 <div class="db-search-bar"><input type="text" id="koSearch" placeholder="Søk på kundenavn eller org.nr..." oninput="renderKundeOversikt()"></div>
 <div class="db-body" id="koBody" style="max-height:60vh"></div>
 <div class="db-meta" id="koMeta"></div>
+<div style="padding:.6rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.5rem;align-items:center;justify-content:space-between;background:#f8faf4">
+<div style="font-size:.78rem;color:#4a7000;font-weight:600">📊 Bulk-import — opprett flere kunder fra Excel/CSV-fil</div>
+<div style="display:flex;gap:.5rem">
+<button onclick="downloadBulkTemplate()" style="font-size:.78rem;padding:.4rem .8rem;background:#fff;color:#4a7000;border:1px solid #90D000;border-radius:6px;cursor:pointer;font-weight:600">⬇ Last ned mal</button>
+<button onclick="$('bulkImportInput').click()" style="font-size:.78rem;padding:.4rem .8rem;background:#4a7000;color:#fff;border:1px solid #4a7000;border-radius:6px;cursor:pointer;font-weight:600">⬆ Importer kunder</button>
+</div>
+</div>
+<input type="file" id="bulkImportInput" accept=".csv" style="display:none" onchange="handleBulkImport(this.files[0])">
 <div id="koBackupSection" style="padding:.8rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.5rem;align-items:center;justify-content:space-between">
 <div id="koBackupInfo" style="font-size:.78rem;color:var(--muted)"></div>
 <div style="display:flex;gap:.5rem">
@@ -1614,14 +1622,19 @@ function renderKundeOversikt(){
 
     h+='<div style="background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:box-shadow .2s" onmouseover="this.style.boxShadow=\'0 4px 12px rgba(0,0,0,.1)\'" onmouseout="this.style.boxShadow=\'none\'">';
 
+    // Sjekk om kunden har importerte tilbud
+    var harImportert=g.tilbud.some(function(t){return t.kildeImport});
+
     // Kundekort-header (alltid synlig)
-    h+='<div style="padding:1rem;cursor:pointer" onclick="var el=document.getElementById(\''+cardId+'\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'">';
-    h+='<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.4rem">';
-    h+='<strong style="font-size:.95rem;color:var(--text)">'+escHtml(g.navn||'Uten navn')+'</strong>';
-    h+='<span style="font-size:.72rem;background:var(--accent-light);color:var(--accent-dark);padding:.15rem .4rem;border-radius:4px;font-weight:600">'+antall+' tilbud</span>';
+    h+='<div style="padding:1rem;cursor:pointer'+(harImportert?';border-left:3px solid #3b82f6':'')+'" onclick="var el=document.getElementById(\''+cardId+'\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.4rem;gap:.4rem">';
+    h+='<div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap"><strong style="font-size:.95rem;color:var(--text)">'+escHtml(g.navn||'Uten navn')+'</strong>';
+    if(harImportert)h+='<span style="font-size:.65rem;background:#dbeafe;color:#1e40af;padding:.1rem .4rem;border-radius:4px;font-weight:600">📥 Importert</span>';
+    h+='</div>';
+    h+='<span style="font-size:.72rem;background:var(--accent-light);color:var(--accent-dark);padding:.15rem .4rem;border-radius:4px;font-weight:600;white-space:nowrap">'+antall+' tilbud</span>';
     h+='</div>';
     h+='<div style="font-size:.78rem;color:var(--muted);margin-bottom:.5rem">'+(g.org||'Ingen org.nr')+'</div>';
-    h+='<div style="font-size:1.15rem;font-weight:700;color:var(--accent-dark);margin-bottom:.4rem">'+fmt(siste.mndPris||0)+' kr/mnd</div>';
+    h+='<div style="font-size:1.15rem;font-weight:700;color:var(--accent-dark);margin-bottom:.4rem">'+(siste.mndPris>0?fmt(siste.mndPris)+' kr/mnd':'<span style="font-size:.85rem;color:#999;font-weight:400">Mangler pris — åpne for å beregne</span>')+'</div>';
     h+='<div style="display:flex;justify-content:space-between;align-items:center">';
     h+='<span style="font-size:.72rem;padding:.2rem .5rem;border-radius:4px;background:'+statusBg+';color:'+statusColor+';font-weight:600">'+statusText+'</span>';
     h+='<span style="font-size:.72rem;color:var(--muted)">Sist: '+(siste.dato||'–')+'</span>';
@@ -1779,6 +1792,157 @@ function exportDatabase(){
   document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
   localStorage.setItem('siste_backup',new Date().toISOString());
   renderKundeOversikt();
+}
+
+// === BULK-IMPORT AV KUNDER FRA CSV ===
+function downloadBulkTemplate(){
+  var headers=['Kundenavn','Org.nr','Selskapstype','Bilag/mnd','Min pr bilag','Fakturaer/mnd','Min pr faktura','MVA (termin/aar/ingen)','Antall ansatte','Lonnsrapportering (ja/nei)','Sammenstilling (ja/nei)','Arsoppgjor AS (ja/nei)','Skattemelding EPF (ja/nei)','Holdingselskap (ja/nei)','Aksjonaerregister (ja/nei)','Generelle systemkostnader (ja/nei)','Periodisk rapportering (ja/nei)','Kvalitetsarbeid (lopende/aarlig/ingen)','Radgivning t/aar','Seniorradgivning t/aar','Kontaktperson','Bransjeprofil'];
+  var example1=['AS Eksempel','999999999','AS','45','4','12','4','termin','3','ja','ja','ja','nei','nei','ja','ja','nei','lopende','5','0','Ola Nordmann','Handel'];
+  var example2=['Enkelt AS','888888888','AS','25','4','0','4','aar','0','nei','nei','ja','nei','nei','nei','ja','nei','aarlig','0','0','',''];
+  var csv=headers.join(';')+'\n'+example1.join(';')+'\n'+example2.join(';');
+  var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='priskalkulator_import_mal.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+function parseCSV(text){
+  // Fjern BOM
+  if(text.charCodeAt(0)===0xFEFF)text=text.slice(1);
+  // Detect separator (; eller ,)
+  var firstLine=text.split('\n')[0];
+  var sep=firstLine.indexOf(';')>=0?';':',';
+  var lines=text.split(/\r?\n/).filter(function(l){return l.trim().length>0});
+  if(lines.length<2)return null;
+  var headers=lines[0].split(sep).map(function(h){return h.trim().toLowerCase().replace(/['"]/g,'')});
+  var rows=[];
+  for(var i=1;i<lines.length;i++){
+    var values=lines[i].split(sep).map(function(v){return v.trim().replace(/^"|"$/g,'')});
+    var row={};
+    for(var j=0;j<headers.length;j++)row[headers[j]]=values[j]||'';
+    rows.push(row);
+  }
+  return {headers:headers,rows:rows};
+}
+
+function findCol(row,names){
+  for(var i=0;i<names.length;i++){
+    var n=names[i].toLowerCase();
+    if(row[n]!==undefined)return row[n];
+  }
+  return '';
+}
+function jaNei(v){var s=(v||'').toLowerCase().trim();return s==='ja'||s==='yes'||s==='true'||s==='1'||s==='x'}
+function csvNum(v,def){var n=parseFloat((v||'').replace(',','.'));return isNaN(n)?(def||0):n}
+
+async function handleBulkImport(file){
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=async function(e){
+    var parsed=parseCSV(e.target.result);
+    if(!parsed||parsed.rows.length===0){alert('Ingen rader funnet i filen.');return}
+    // Preview
+    var msg='Vil du importere '+parsed.rows.length+' kunde'+(parsed.rows.length!==1?'r':'')+'?\n\nDe første radene:\n';
+    for(var i=0;i<Math.min(3,parsed.rows.length);i++){
+      var r=parsed.rows[i];
+      msg+='\n• '+(findCol(r,['kundenavn','navn'])||'(uten navn)')+' — '+(findCol(r,['bilag/mnd','bilag'])||'0')+' bilag, '+(findCol(r,['antall ansatte','ansatte'])||'0')+' ansatte';
+    }
+    if(!confirm(msg))return;
+
+    var idx=getDbIndex();
+    var byraaKode=$('selskapSelect').value;
+    var byraaNavn=SELSKAPER[byraaKode]||'Egendefinert';
+    var antallOpprettet=0;
+    var antallFeilet=0;
+
+    for(var i=0;i<parsed.rows.length;i++){
+      try{
+        var r=parsed.rows[i];
+        var kundeNavn=findCol(r,['kundenavn','navn']);
+        if(!kundeNavn){antallFeilet++;continue}
+
+        var id=generateTilbudId();
+        var bilagMnd=csvNum(findCol(r,['bilag/mnd','bilag']),0);
+        var minPrBilag=csvNum(findCol(r,['min pr bilag','minutter pr bilag']),4);
+        var fakturaMnd=csvNum(findCol(r,['fakturaer/mnd','fakturaer','fakt/mnd']),0);
+        var minPrFaktura=csvNum(findCol(r,['min pr faktura','minutter pr faktura']),4);
+        var mva=(findCol(r,['mva (termin/aar/ingen)','mva'])||'').toLowerCase();
+        var ansatte=csvNum(findCol(r,['antall ansatte','ansatte']),0);
+        var kvalArt=(findCol(r,['kvalitetsarbeid (lopende/aarlig/ingen)','kvalitetsarbeid'])||'').toLowerCase();
+
+        var data={
+          _version:'1.0',_id:id,_savedDate:new Date().toISOString(),
+          _kundeNavn:kundeNavn,_kundeOrg:findCol(r,['org.nr','orgnr']),
+          _byraa:byraaKode,_byraaNavn:byraaNavn,_tilbudGenerert:false,
+          _kildeImport:true,_importDato:new Date().toISOString().slice(0,10),
+          selskap:byraaKode,
+          kunde:{
+            navn:kundeNavn,
+            org:findCol(r,['org.nr','orgnr']),
+            selskapstype:findCol(r,['selskapstype'])||'AS',
+            asType:'drift',
+            kontakt:findCol(r,['kontaktperson','kontakt']),
+            bransjeProfil:findCol(r,['bransjeprofil','bransje'])
+          },
+          customSelskap:{navn:'',orgNr:''},
+          regnskap:{
+            fakturaMnd:fakturaMnd,minPrFaktura:minPrFaktura,
+            bilagMnd:bilagMnd,minPrBilag:minPrBilag,
+            mvaTermin:mva==='termin',mvaAar:mva==='aar'||mva==='år',
+            omvendtMva:false,prosjektToggle:false,prosjektAnt:0,
+            purring:fakturaMnd>0
+          },
+          lonn:{
+            antAnsatte:ansatte,
+            lonnsRapp:jaNei(findCol(r,['lonnsrapportering (ja/nei)','lonnsrapportering','lonnsrapp'])),
+            sammenstilling:jaNei(findCol(r,['sammenstilling (ja/nei)','sammenstilling'])),
+            ekstraLonn:0
+          },
+          aarsoppgjor:{
+            aarsoppgjorAS:jaNei(findCol(r,['arsoppgjor as (ja/nei)','arsoppgjor as','aarsoppgjor'])),
+            skattemeldingEPF:jaNei(findCol(r,['skattemelding epf (ja/nei)','skattemelding epf','epf'])),
+            holdingselskap:jaNei(findCol(r,['holdingselskap (ja/nei)','holdingselskap','holding'])),
+            aksjonaerReg:jaNei(findCol(r,['aksjonaerregister (ja/nei)','aksjonaerregister','aksjonaer'])),
+            aksjonaerEmisjon:false,
+            periodeAar:jaNei(findCol(r,['generelle systemkostnader (ja/nei)','systemkostnader'])),
+            sameieOppgave:false,
+            periodiskRapp:jaNei(findCol(r,['periodisk rapportering (ja/nei)','periodisk rapportering']))
+          },
+          kvalitet:{
+            kvalNy:kvalArt==='lopende'||kvalArt==='løpende',
+            kvalEks:kvalArt==='aarlig'||kvalArt==='årlig',
+            raadgivTimer:csvNum(findCol(r,['radgivning t/aar','radgivning']),0),
+            seniorTimer:csvNum(findCol(r,['seniorradgivning t/aar','seniorradgivning']),0)
+          },
+          engang:{oppstart:false,oppstartRabatt:0,protokoll:false,stiftelse:false,avvikling:false},
+          rabatt:{rabattPct:0,rabattMnd:0},
+          tilbud:{dato:'',gyldig:'',nr:'',utarbeidet:'',intro:'',ekstra:''}
+        };
+        data._mndPris=0; // beregnes senere når brukeren åpner
+
+        if(_useFileSystem){
+          _dbCache.tilbud[id]=data;
+          await fsWriteFile(_fsTilbudDir,id+'.json',JSON.stringify(data,null,2));
+        }else if(_isElectron){
+          _dbCache.tilbud[id]=data;
+          await window.electronStore.saveTilbud(id,data);
+        }else{
+          localStorage.setItem(DB_PREFIX+id,JSON.stringify(data));
+        }
+        idx.push({
+          id:id,navn:kundeNavn,org:data._kundeOrg,mndPris:0,
+          byraa:byraaKode,byraaNavn:byraaNavn,
+          dato:new Date().toISOString().slice(0,10),
+          tilbudGenerert:false,kildeImport:true
+        });
+        antallOpprettet++;
+      }catch(err){console.error('Importfeil rad',i,err);antallFeilet++}
+    }
+    saveDbIndex(idx);
+    alert('Ferdig!\n\nOpprettet: '+antallOpprettet+' kunder\nFeilet: '+antallFeilet);
+    renderKundeOversikt();
+  };
+  reader.readAsText(file,'UTF-8');
 }
 
 function importDatabase(file){
