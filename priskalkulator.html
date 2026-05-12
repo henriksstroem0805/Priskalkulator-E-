@@ -2405,12 +2405,14 @@ function renderTilbud(){
   var h='';
   var regTot=S.bilagPris+S.fakturaPris+S.internTidPris+S.mvaPris+S.omvendtMvaPris+S.prosjPris;
   var lonnTot=S.lonnBasis+S.lr+S.sammenstillingMnd+S.ek;
-  var avtaltTot=regTot+lonnTot;
-  if(avtaltTot>0){
+  var harRegnskap=(S.bilagPris||0)>0;
+  var harLonn=lonnTot>0;
+  if(harRegnskap||harLonn){
     var deler=[];
-    if(regTot>0)deler.push('Regnskapstjenester');
-    if(lonnTot>0)deler.push('L\u00f8nnsadministrasjon');
-    var avtaltBesk=deler.join('. ')+(deler.length>0?'.':'');
+    if(harRegnskap)deler.push('Regnskapstjenester');
+    if(harLonn)deler.push('L\u00f8nnsadministrasjon');
+    var avtaltBesk=deler.join('. ')+'.';
+    var avtaltTot=(harRegnskap?regTot:0)+(harLonn?lonnTot:0);
     h+='<tr><td>Avtalt Tjenesteleveranse<br><small style="color:var(--muted);font-weight:400">'+avtaltBesk+'</small></td><td>'+fmt(avtaltTot)+' kr/mnd</td></tr>';
   }
   if(S.aarsAarlig>0){
@@ -2720,12 +2722,14 @@ function exportWord(){
   html+='<table class="price-table"><thead><tr><th style="width:60%">Tjeneste</th><th>Pris</th></tr></thead><tbody>';
   var regTot=S.bilagPris+S.fakturaPris+S.internTidPris+S.mvaPris+S.omvendtMvaPris+S.prosjPris;
   var lonnTot=S.lonnBasis+S.lr+S.sammenstillingMnd+S.ek;
-  var avtaltTot=regTot+lonnTot;
-  if(avtaltTot>0){
+  var harRegnskap=(S.bilagPris||0)>0;
+  var harLonn=lonnTot>0;
+  if(harRegnskap||harLonn){
     var deler=[];
-    if(regTot>0)deler.push('Regnskapstjenester');
-    if(lonnTot>0)deler.push('L\u00f8nnsadministrasjon');
-    var avtaltBesk=deler.join('. ')+(deler.length>0?'.':'');
+    if(harRegnskap)deler.push('Regnskapstjenester');
+    if(harLonn)deler.push('L\u00f8nnsadministrasjon');
+    var avtaltBesk=deler.join('. ')+'.';
+    var avtaltTot=(harRegnskap?regTot:0)+(harLonn?lonnTot:0);
     html+='<tr><td>Avtalt Tjenesteleveranse<br><span class="small">'+avtaltBesk+'</span></td><td>'+fmt(avtaltTot)+' kr/mnd</td></tr>';
   }
   if(S.aarsAarlig>0){
