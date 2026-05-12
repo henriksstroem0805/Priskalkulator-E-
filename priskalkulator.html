@@ -2407,12 +2407,14 @@ function renderTilbud(){
   var lonnTot=S.lonnBasis+S.lr+S.sammenstillingMnd+S.ek;
   var harRegnskap=(S.bilagPris||0)>0;
   var harLonn=lonnTot>0;
-  if(harRegnskap||harLonn){
+  var harKval=(S.kvalMnd||0)>0;
+  if(harRegnskap||harLonn||harKval){
     var deler=[];
     if(harRegnskap)deler.push('Regnskapstjenester');
     if(harLonn)deler.push('L\u00f8nnsadministrasjon');
+    if(harKval)deler.push('Lovp\u00e5lagt kvalitetsarbeid');
     var avtaltBesk=deler.join('. ')+'.';
-    var avtaltTot=(harRegnskap?regTot:0)+(harLonn?lonnTot:0);
+    var avtaltTot=(harRegnskap?regTot:0)+(harLonn?lonnTot:0)+(harKval?S.kvalMnd:0);
     h+='<tr><td>Avtalt tjenesteleveranse<br><small style="color:var(--muted);font-weight:400">'+avtaltBesk+'</small></td><td>'+fmt(avtaltTot)+' kr/mnd</td></tr>';
   }
   if(S.aarsAarlig>0){
@@ -2428,7 +2430,7 @@ function renderTilbud(){
     aarsBesk=aarsBesk.charAt(0).toUpperCase()+aarsBesk.slice(1);
     h+='<tr><td>\u00c5rsoppgj\u00f8r<br><small style="color:var(--muted);font-weight:400">'+aarsBesk+'</small></td><td>'+fmt(S.aarsAarlig)+' kr/\u00e5r</td></tr>';
   }
-  if(S.kvalMnd>0)h+='<tr><td>Lovp\u00e5lagt kvalitetsarbeid<br><small style="color:var(--muted);font-weight:400">\u00c5rlig kvalitetskontroll, hvitvaskingsvurdering og oppdragsdokumentasjon (GRFS)</small></td><td>'+fmt(S.kvalMnd)+' kr/mnd</td></tr>';
+  // Lovp\u00e5lagt kvalitetsarbeid er n\u00e5 inkludert i 'Avtalt tjenesteleveranse'
   var raadTot=S.raadgivAarlig+S.seniorAarlig;
   if(raadTot>0)h+='<tr><td>R\u00e5dgivning<br><small style="color:var(--muted);font-weight:400">\u00d8konomisk r\u00e5dgivning og sparring</small></td><td>'+fmt(raadTot)+' kr/\u00e5r</td></tr>';
   $('tbBody').innerHTML=h;
@@ -2724,12 +2726,14 @@ function exportWord(){
   var lonnTot=S.lonnBasis+S.lr+S.sammenstillingMnd+S.ek;
   var harRegnskap=(S.bilagPris||0)>0;
   var harLonn=lonnTot>0;
-  if(harRegnskap||harLonn){
+  var harKval=(S.kvalMnd||0)>0;
+  if(harRegnskap||harLonn||harKval){
     var deler=[];
     if(harRegnskap)deler.push('Regnskapstjenester');
     if(harLonn)deler.push('L\u00f8nnsadministrasjon');
+    if(harKval)deler.push('Lovp\u00e5lagt kvalitetsarbeid');
     var avtaltBesk=deler.join('. ')+'.';
-    var avtaltTot=(harRegnskap?regTot:0)+(harLonn?lonnTot:0);
+    var avtaltTot=(harRegnskap?regTot:0)+(harLonn?lonnTot:0)+(harKval?S.kvalMnd:0);
     html+='<tr><td>Avtalt tjenesteleveranse<br><span class="small">'+avtaltBesk+'</span></td><td>'+fmt(avtaltTot)+' kr/mnd</td></tr>';
   }
   if(S.aarsAarlig>0){
@@ -2745,7 +2749,7 @@ function exportWord(){
     aarsBesk2=aarsBesk2.charAt(0).toUpperCase()+aarsBesk2.slice(1);
     html+='<tr><td>\u00c5rsoppgj\u00f8r<br><span class="small">'+aarsBesk2+'</span></td><td>'+fmt(S.aarsAarlig)+' kr/\u00e5r</td></tr>';
   }
-  if(S.kvalMnd>0)html+='<tr><td>Lovp\u00e5lagt kvalitetsarbeid<br><span class="small">\u00c5rlig kvalitetskontroll, hvitvaskingsvurdering og oppdragsdokumentasjon (GRFS)</span></td><td>'+fmt(S.kvalMnd)+' kr/mnd</td></tr>';
+  // Lovp\u00e5lagt kvalitetsarbeid er n\u00e5 inkludert i 'Avtalt tjenesteleveranse'
   var raadTot=S.raadgivAarlig+S.seniorAarlig;
   if(raadTot>0)html+='<tr><td>R\u00e5dgivning<br><span class="small">\u00d8konomisk r\u00e5dgivning og sparring</span></td><td>'+fmt(raadTot)+' kr/\u00e5r</td></tr>';
   html+='</tbody><tfoot><tr><td>Sum l\u00f8pende pr m\u00e5ned</td><td>'+fmt(S.mndTot)+' kr/mnd</td></tr>';
