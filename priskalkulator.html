@@ -748,7 +748,7 @@ async function tryUnlock(){
 <div class="tb-head"><div class="company"><h3 id="tbSelskap"></h3><p id="tbSelskapOrg" style="font-size:.82rem;color:#555;margin-bottom:.15rem"></p><p>Autorisert regnskapsførerselskap</p></div><div class="meta"><strong>TILBUD</strong><span id="tbNr"></span><br><span id="tbDato"></span><br>Gyldig til: <span id="tbGyldig"></span></div></div>
 <div class="tb-recip"><h4>Tilbud til</h4><div class="name" id="tbKunde">–</div><div class="details"><span id="tbOrg"></span><br><span id="tbKontakt"></span></div></div>
 <div class="tb-intro" id="tbIntro"></div>
-<table class="tb-table"><thead><tr><th style="width:55%">Tjeneste</th><th style="text-align:right">Pris</th></tr></thead><tbody id="tbBody"></tbody><tfoot id="tbFoot"></tfoot></table>
+<table class="tb-table"><thead><tr><th style="width:55%">Tjenester</th><th style="text-align:right">Pris</th></tr></thead><tbody id="tbBody"></tbody><tfoot id="tbFoot"></tfoot></table>
 <div id="tbEngWrap" style="display:none"><table class="tb-table" style="margin-top:-.5rem"><thead><tr><th style="width:55%">Engangstjenester</th><th style="text-align:right">Pris</th></tr></thead><tbody id="tbEngBody"></tbody><tfoot id="tbEngFoot"></tfoot></table></div>
 <div class="tb-vilkaar tb-page2" style="margin-top:2rem"><h4>Hva inngår i våre tjenester</h4>
 <p style="font-size:.82rem;color:#444;margin-bottom:.7rem">Som autorisert regnskapsførerselskap utfører vi vårt arbeid i henhold til regnskapsførerloven og God Regnskapsføringsskikk (GRFS). Dette innebærer blant annet:</p>
@@ -2722,7 +2722,7 @@ function exportWord(){
   if(intro)html+='<p style="margin:0 0 16pt;font-size:10pt;color:#444">'+esc(intro)+'</p>';
 
   // Price table
-  html+='<table class="price-table"><thead><tr><th style="width:60%">Tjeneste</th><th>Pris</th></tr></thead><tbody>';
+  html+='<table class="price-table"><thead><tr><th style="width:60%">Tjenester</th><th>Pris</th></tr></thead><tbody>';
   var regTot=S.bilagPris+S.fakturaPris+S.internTidPris+S.mvaPris+S.omvendtMvaPris+S.prosjPris;
   var lonnTot=S.lonnBasis+S.lr+S.sammenstillingMnd+S.ek;
   var harRegnskap=(S.bilagPris||0)>0;
