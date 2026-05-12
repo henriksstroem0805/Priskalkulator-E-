@@ -113,16 +113,18 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .toolbar-btns{display:flex;gap:.5rem}.toolbar-btns .btn{padding:.45rem .9rem;font-size:.8rem}
 .tilbud-edit{padding:1.3rem 1.5rem;border-bottom:1px solid var(--border);background:#f7faf7}
 .tilbud-edit h3{font-family:var(--font-display);font-size:.9rem;font-weight:500;margin-bottom:.9rem;color:var(--accent-dark)}
-.tilbud-page{padding:2.5rem;font-size:.88rem;color:var(--ink);line-height:1.65}
-@media(max-width:600px){.tilbud-page{padding:1.3rem}}
-.tb-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2.2rem;padding-bottom:1.3rem;border-bottom:2.5px solid var(--accent)}
-.tb-head .company-logo{max-height:50px;max-width:200px;margin-bottom:.6rem;display:block}
-.tb-head .company h3{font-family:var(--font-display);font-size:1.2rem;font-weight:600;color:var(--accent-dark);margin-bottom:.15rem}
-.tb-head .company p{font-size:.78rem;color:var(--muted)}
-.tb-head .meta{text-align:right;font-size:.78rem;color:var(--muted)}.tb-head .meta strong{color:var(--ink);display:block;margin-bottom:.1rem;font-size:.85rem}
-.tb-recip{margin-bottom:1.8rem}.tb-recip h4{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.35rem}
-.tb-recip .name{font-size:1rem;font-weight:600}.tb-recip .details{font-size:.82rem;color:var(--muted)}
-.tb-intro{margin-bottom:1.8rem;font-size:.86rem;color:#444;line-height:1.65}
+.tilbud-page{padding:3rem 3rem 2.5rem;font-size:.9rem;color:var(--ink);line-height:1.7}
+@media(max-width:600px){.tilbud-page{padding:1.5rem}}
+.tb-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2.5rem;padding-bottom:1.5rem;border-bottom:2.5px solid var(--accent)}
+.tb-head .company-logo{max-height:55px;max-width:200px;margin-bottom:.7rem;display:block}
+.tb-head .company h3{font-family:var(--font-display);font-size:1.25rem;font-weight:600;color:var(--accent-dark);margin-bottom:.2rem}
+.tb-head .company p{font-size:.8rem;color:var(--muted);line-height:1.5}
+.tb-head .meta{text-align:right;font-size:.82rem;color:var(--muted);line-height:1.6}.tb-head .meta strong{color:var(--ink);display:block;margin-bottom:.15rem;font-size:.88rem}
+.tb-recip{margin-bottom:2.2rem;padding:1rem 1.2rem;background:#fafcf6;border-radius:8px;border-left:3px solid var(--accent)}
+.tb-recip h4{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent-dark);margin-bottom:.4rem;font-weight:600}
+.tb-recip .name{font-size:1.05rem;font-weight:700;color:var(--ink);margin-bottom:.2rem}.tb-recip .details{font-size:.83rem;color:#555;line-height:1.5}
+.tb-intro{margin-bottom:2.2rem;font-size:.92rem;color:#2a3318;line-height:1.85;text-align:left}
+.tb-intro p{margin-bottom:1rem}.tb-intro p:first-child{font-size:1rem;color:#1a2010;font-weight:500}.tb-intro p:last-child{margin-bottom:0}
 .tb-table{width:100%;border-collapse:collapse;margin-bottom:1.8rem}
 .tb-table thead th{background:var(--accent-dark);color:#fff;padding:.6rem .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600;text-align:left}
 .tb-table thead th:last-child{text-align:right}
@@ -2181,7 +2183,10 @@ function renderTilbud(){
   var kn=$('kundeNavn').value.trim()||'\u2013';$('tbKunde').textContent=kn;
   $('tbOrg').textContent=$('kundeOrg').value?'Org.nr: '+$('kundeOrg').value:'';
   $('tbKontakt').textContent=$('kundeKontakt').value?'Att: '+$('kundeKontakt').value:'';
-  $('tbIntro').textContent=$('tilbudIntro').value||'';
+  var introVal=$('tilbudIntro').value||'';
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  var introHtml=introVal.split(/\n\s*\n/).map(function(p){return '<p>'+esc(p).replace(/\n/g,'<br>')+'</p>'}).join('');
+  $('tbIntro').innerHTML=introHtml;
   $('tbSigEOO').textContent=$('tilbudUtarbeidet').value||'Sted / Dato';$('tbSigKunde').textContent=kn;
   var ev=$('tilbudEkstra').value.trim();$('tbEkstra').textContent=ev;$('tbEkstra').style.display=ev?'block':'none';
 
