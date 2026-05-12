@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Priskalkulator – Eika Økonomi</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#f5f8ed;--card:#fff;--ink:#2a3318;--muted:#6b7a56;--accent:#90D000;--accent-light:#e8f5cc;--accent-dark:#4a7000;--accent-mid:#7ab800;--border:#d4e2be;--shadow:0 1px 3px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.03);--shadow-lg:0 4px 12px rgba(0,0,0,.07),0 16px 40px rgba(0,0,0,.05);--radius:12px;--font:'Times New Roman',Times,serif;--font-display:'Times New Roman',Times,serif}
@@ -560,13 +561,13 @@ async function tryUnlock(){
 <div class="db-body" id="koBody" style="max-height:60vh"></div>
 <div class="db-meta" id="koMeta"></div>
 <div style="padding:.6rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.5rem;align-items:center;justify-content:space-between;background:#f8faf4">
-<div style="font-size:.78rem;color:#4a7000;font-weight:600">📊 Bulk-import — opprett flere kunder fra Excel/CSV-fil</div>
+<div style="font-size:.78rem;color:#4a7000;font-weight:600">📊 Bulk-import — opprett flere kunder fra Excel- eller CSV-fil</div>
 <div style="display:flex;gap:.5rem">
 <button onclick="downloadBulkTemplate()" style="font-size:.78rem;padding:.4rem .8rem;background:#fff;color:#4a7000;border:1px solid #90D000;border-radius:6px;cursor:pointer;font-weight:600">⬇ Last ned mal</button>
 <button onclick="$('bulkImportInput').click()" style="font-size:.78rem;padding:.4rem .8rem;background:#4a7000;color:#fff;border:1px solid #4a7000;border-radius:6px;cursor:pointer;font-weight:600">⬆ Importer kunder</button>
 </div>
 </div>
-<input type="file" id="bulkImportInput" accept=".csv" style="display:none" onchange="handleBulkImport(this.files[0])">
+<input type="file" id="bulkImportInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleBulkImport(this.files[0])">
 <div id="koBackupSection" style="padding:.8rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.5rem;align-items:center;justify-content:space-between">
 <div id="koBackupInfo" style="font-size:.78rem;color:var(--muted)"></div>
 <div style="display:flex;gap:.5rem">
@@ -1799,6 +1800,17 @@ function downloadBulkTemplate(){
   var headers=['Kundenavn','Org.nr','Selskapstype','Bilag/mnd','Min pr bilag','Fakturaer/mnd','Min pr faktura','MVA (termin/aar/ingen)','Antall ansatte','Lonnsrapportering (ja/nei)','Sammenstilling (ja/nei)','Arsoppgjor AS (ja/nei)','Skattemelding EPF (ja/nei)','Holdingselskap (ja/nei)','Aksjonaerregister (ja/nei)','Generelle systemkostnader (ja/nei)','Periodisk rapportering (ja/nei)','Kvalitetsarbeid (lopende/aarlig/ingen)','Radgivning t/aar','Seniorradgivning t/aar','Kontaktperson','Bransjeprofil'];
   var example1=['AS Eksempel','999999999','AS','45','4','12','4','termin','3','ja','ja','ja','nei','nei','ja','ja','nei','lopende','5','0','Ola Nordmann','Handel'];
   var example2=['Enkelt AS','888888888','AS','25','4','0','4','aar','0','nei','nei','ja','nei','nei','nei','ja','nei','aarlig','0','0','',''];
+  // Hvis SheetJS er tilgjengelig, lag Excel-mal
+  if(typeof XLSX!=='undefined'){
+    var ws=XLSX.utils.aoa_to_sheet([headers,example1,example2]);
+    // Sett kolonnebredder
+    ws['!cols']=headers.map(function(h){return {wch:Math.max(h.length+2,12)}});
+    var wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Kunder');
+    XLSX.writeFile(wb,'priskalkulator_import_mal.xlsx');
+    return;
+  }
+  // Fallback: CSV hvis SheetJS ikke er lastet
   var csv=headers.join(';')+'\n'+example1.join(';')+'\n'+example2.join(';');
   var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
   var url=URL.createObjectURL(blob);
@@ -1835,11 +1847,39 @@ function findCol(row,names){
 function jaNei(v){var s=(v||'').toLowerCase().trim();return s==='ja'||s==='yes'||s==='true'||s==='1'||s==='x'}
 function csvNum(v,def){var n=parseFloat((v||'').replace(',','.'));return isNaN(n)?(def||0):n}
 
+function parseExcel(arrayBuffer){
+  if(typeof XLSX==='undefined'){alert('Excel-bibliotek ikke lastet. Sjekk internettforbindelsen og prøv igjen, eller bruk CSV-format.');return null}
+  try{
+    var workbook=XLSX.read(arrayBuffer,{type:'array'});
+    var sheetName=workbook.SheetNames[0];
+    var sheet=workbook.Sheets[sheetName];
+    var rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:''});
+    if(rows.length<2)return null;
+    var headers=rows[0].map(function(h){return String(h||'').trim().toLowerCase()});
+    var dataRows=[];
+    for(var i=1;i<rows.length;i++){
+      var r=rows[i];
+      // Hopp over tomme rader
+      if(r.every(function(v){return !String(v||'').trim()}))continue;
+      var obj={};
+      for(var j=0;j<headers.length;j++)obj[headers[j]]=String(r[j]||'').trim();
+      dataRows.push(obj);
+    }
+    return {headers:headers,rows:dataRows};
+  }catch(e){console.error('Excel-parsefeil:',e);return null}
+}
+
 async function handleBulkImport(file){
   if(!file)return;
+  var isExcel=/\.(xlsx|xls)$/i.test(file.name);
   var reader=new FileReader();
   reader.onload=async function(e){
-    var parsed=parseCSV(e.target.result);
+    var parsed;
+    if(isExcel){
+      parsed=parseExcel(e.target.result);
+    }else{
+      parsed=parseCSV(e.target.result);
+    }
     if(!parsed||parsed.rows.length===0){alert('Ingen rader funnet i filen.');return}
     // Preview
     var msg='Vil du importere '+parsed.rows.length+' kunde'+(parsed.rows.length!==1?'r':'')+'?\n\nDe første radene:\n';
@@ -1942,7 +1982,7 @@ async function handleBulkImport(file){
     alert('Ferdig!\n\nOpprettet: '+antallOpprettet+' kunder\nFeilet: '+antallFeilet);
     renderKundeOversikt();
   };
-  reader.readAsText(file,'UTF-8');
+  if(isExcel){reader.readAsArrayBuffer(file)}else{reader.readAsText(file,'UTF-8')}
 }
 
 function importDatabase(file){
