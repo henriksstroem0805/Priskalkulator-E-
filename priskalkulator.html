@@ -2218,7 +2218,7 @@ function renderTilbud(){
   if((S.aarsAarlig||0)>0)inngaar+='<li><strong>Årsoppgjør</strong> – utarbeidelse av årsregnskap og skattemelding iht. gjeldende lovverk</li>';
   var harLonn=(S.lonnBasis||0)>0||(S.lr||0)>0||(S.sammenstillingMnd||0)>0||(S.ek||0)>0;
   if(harLonn)inngaar+='<li><strong>Lønnsadministrasjon</strong> – lønnskjøring, a-melding, sammenstillingsoppgaver og oppfølging av arbeidsgiveravgift og skattetrekk</li>';
-  if((S.kvalMnd||0)>0)inngaar+='<li><strong>Lovpålagt kvalitetsarbeid</strong> – årlig intern kvalitetskontroll pr kunde (GRFS kap. 7), vurdering av kundens interne rutiner, oppfølging av hvitvaskingsregelverket, oppdragsavtale og løpende oppdragsdokumentasjon. Vi er underlagt ekstern kvalitetskontroll fra Regnskap Norge/Finanstilsynet.</li>';
+  if((S.kvalMnd||0)>0)inngaar+='<li><strong>Lovpålagt kvalitetsarbeid</strong> – intern kvalitetskontroll pr kunde (GRFS kap. 7), vurdering av oppdragsgivers virksomhet og interne rutiner, oppfølging av hvitvaskingsregelverket, oppdragsavtale og løpende oppdragsdokumentasjon. Vi er underlagt ekstern kvalitetskontroll fra Regnskap Norge/Finanstilsynet.</li>';
   if(chk('periodiskRapp'))inngaar+='<li><strong>Rapportering</strong> – periodiske regnskapsrapporter med skriftlige kommentarer iht. GRFS</li>';
   if((S.rv||0)>0||(S.sv||0)>0)inngaar+='<li><strong>Rådgivning</strong> – økonomisk rådgivning, budsjettering og sparring tilpasset virksomhetens behov</li>';
   $('tbInngaar').innerHTML=inngaar;
