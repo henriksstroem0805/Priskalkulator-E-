@@ -2428,11 +2428,12 @@ function renderTilbud(){
     if(chk('periodiskRapp'))aarsDeler.push('periodisk rapportering');
     var aarsBesk=aarsDeler.length>0?aarsDeler.join(', '):'\u00e5rsregnskap';
     aarsBesk=aarsBesk.charAt(0).toUpperCase()+aarsBesk.slice(1);
-    h+='<tr><td>\u00c5rsoppgj\u00f8r<br><small style="color:var(--muted);font-weight:400">'+aarsBesk+'</small></td><td>'+fmt(S.aarsAarlig)+' kr/\u00e5r</td></tr>';
+    var aarsMnd=Math.ceil(S.aarsAarlig/12/10)*10;
+    h+='<tr><td>\u00c5rsoppgj\u00f8r<br><small style="color:var(--muted);font-weight:400">'+aarsBesk+'</small></td><td>'+fmt(aarsMnd)+' kr/mnd</td></tr>';
   }
   // Lovp\u00e5lagt kvalitetsarbeid er n\u00e5 inkludert i 'Avtalt tjenesteleveranse'
-  var raadTot=S.raadgivAarlig+S.seniorAarlig;
-  if(raadTot>0)h+='<tr><td>R\u00e5dgivning<br><small style="color:var(--muted);font-weight:400">\u00d8konomisk r\u00e5dgivning og sparring</small></td><td>'+fmt(raadTot)+' kr/\u00e5r</td></tr>';
+  var raadMnd=(S.rv||0)+(S.sv||0);
+  if(raadMnd>0)h+='<tr><td>R\u00e5dgivning<br><small style="color:var(--muted);font-weight:400">\u00d8konomisk r\u00e5dgivning og sparring</small></td><td>'+fmt(raadMnd)+' kr/mnd</td></tr>';
   $('tbBody').innerHTML=h;
 
   var fh='<tr><td>Sum l\u00f8pende pr m\u00e5ned</td><td>'+fmt(S.mndTot)+' kr/mnd</td></tr>';
@@ -2747,11 +2748,12 @@ function exportWord(){
     if(chk('periodiskRapp'))aarsDeler2.push('periodisk rapportering');
     var aarsBesk2=aarsDeler2.length>0?aarsDeler2.join(', '):'\u00e5rsregnskap';
     aarsBesk2=aarsBesk2.charAt(0).toUpperCase()+aarsBesk2.slice(1);
-    html+='<tr><td>\u00c5rsoppgj\u00f8r<br><span class="small">'+aarsBesk2+'</span></td><td>'+fmt(S.aarsAarlig)+' kr/\u00e5r</td></tr>';
+    var aarsMnd2=Math.ceil(S.aarsAarlig/12/10)*10;
+    html+='<tr><td>\u00c5rsoppgj\u00f8r<br><span class="small">'+aarsBesk2+'</span></td><td>'+fmt(aarsMnd2)+' kr/mnd</td></tr>';
   }
   // Lovp\u00e5lagt kvalitetsarbeid er n\u00e5 inkludert i 'Avtalt tjenesteleveranse'
-  var raadTot=S.raadgivAarlig+S.seniorAarlig;
-  if(raadTot>0)html+='<tr><td>R\u00e5dgivning<br><span class="small">\u00d8konomisk r\u00e5dgivning og sparring</span></td><td>'+fmt(raadTot)+' kr/\u00e5r</td></tr>';
+  var raadMnd2=(S.rv||0)+(S.sv||0);
+  if(raadMnd2>0)html+='<tr><td>R\u00e5dgivning<br><span class="small">\u00d8konomisk r\u00e5dgivning og sparring</span></td><td>'+fmt(raadMnd2)+' kr/mnd</td></tr>';
   html+='</tbody><tfoot><tr><td>Sum l\u00f8pende pr m\u00e5ned</td><td>'+fmt(S.mndTot)+' kr/mnd</td></tr>';
   html+='<tr><td>Estimert \u00e5rspris</td><td>'+fmt(S.mndTot*12)+' kr/\u00e5r</td></tr>';
   if(S.harRabatt){html+='<tr><td>Rabatt '+S.rabattPct+'% i '+S.rabattMnd+' mnd<br><span class="small">Rabattert mndpris: '+fmt(S.rabattMndPris)+' kr/mnd</span></td><td style="color:#2a7000">\u2212'+fmt(S.rabattVerdi)+' kr</td></tr>';html+='<tr><td>Effektiv \u00e5rspris f\u00f8rste \u00e5r</td><td>'+fmt(S.mndTot*12-S.rabattVerdi)+' kr/\u00e5r</td></tr>'}
