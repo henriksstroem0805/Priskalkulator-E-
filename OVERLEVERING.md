@@ -18,10 +18,11 @@ Se `CLAUDE.md` for hvordan koden henger sammen.
 
 1. **Overta GitHub-tilgangen.** Repoet må enten overføres til deg eller du må legges til
    som eier. Uten det kan du ikke lage utgivelser.
-2. **Bytt ut det hardkodede brukernavnet** hvis repoet flytter. `henriksstroem0805` står
-   fire steder: to i `main.js`, én i `priskalkulator.html`, og `publish.owner` i
-   `package.json`. GitHub videresender en stund etter en overføring, men slutter å gjøre
-   det hvis noen senere lager et nytt repo med samme navn – da stopper auto-oppdateringen.
+2. **Brukernavnet er allerede byttet til `Kornelijacive`** fire steder: to i `main.js`,
+   én i `priskalkulator.html`, og `publish.owner` i `package.json`. Disse peker på
+   `Kornelijacive/Priskalkulator-E-` og virker først når overføringen i punkt 1 er
+   fullført. Fram til da feiler versjonssjekken stille – begge kallene har feilhåndtering,
+   så appen fungerer som normalt, den viser bare ingen oppdateringsbanner.
 3. **Vurder om repoet skal være offentlig.** Det er offentlig i dag. Det betyr at hele
    prismodellen – timepriser, fastpriser og interne kostnadssatser for alle fem byråene –
    er lesbar for hvem som helst. Auto-oppdateringen henter installeren fra release-siden,

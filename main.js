@@ -64,7 +64,7 @@ function createWindow() {
   // Sjekk for oppdateringer via GitHub API (enkel og pålitelig)
   setTimeout(() => {
     const https = require('https');
-    https.get('https://api.github.com/repos/henriksstroem0805/Priskalkulator-E-/releases/latest', {
+    https.get('https://api.github.com/repos/Kornelijacive/Priskalkulator-E-/releases/latest', {
       headers: { 'User-Agent': 'Priskalkulator' }
     }, (res) => {
       let data = '';
@@ -288,7 +288,7 @@ autoUpdater.on('error', (err) => {
   console.log('Auto-updater feil:', err.message);
   // Fallback: sjekk manuelt via GitHub API
   const https = require('https');
-  https.get('https://api.github.com/repos/henriksstroem0805/Priskalkulator-E-/releases/latest', {
+  https.get('https://api.github.com/repos/Kornelijacive/Priskalkulator-E-/releases/latest', {
     headers: { 'User-Agent': 'Priskalkulator' }
   }, (res) => {
     let data = '';

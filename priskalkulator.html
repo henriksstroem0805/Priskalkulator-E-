@@ -3131,7 +3131,7 @@ if(_isElectron){
   });
   // Sjekk for oppdateringer direkte fra renderer
   window.electronStore.getVersion().then(function(currentVersion){
-    fetch('https://api.github.com/repos/henriksstroem0805/Priskalkulator-E-/releases/latest')
+    fetch('https://api.github.com/repos/Kornelijacive/Priskalkulator-E-/releases/latest')
     .then(function(r){return r.json()})
     .then(function(release){
       var latest=release.tag_name.replace('v','');

@@ -106,6 +106,7 @@ Nettleserversjonen har ingen utgivelse – der er `main` det som gjelder.
   med, så den årlige prisjusteringen hopper over dem.
 - **GitHub-brukernavnet er hardkodet** fire steder (`main.js` to ganger,
   `priskalkulator.html`, `publish.owner` i `package.json`). Må endres hvis repoet flyttes.
+  Peker i dag på `Kornelijacive`.
 - **SheetJS lastes fra CDN.** Uten nett faller Excel-import tilbake til CSV. Biblioteket
   bør legges lokalt.
 - **Bulk-importerte kunder får `_mndPris: 0`** til noen åpner dem, så totalene i

@@ -47,7 +47,7 @@
     },
     "publish": {
       "provider": "github",
-      "owner": "henriksstroem0805",
+      "owner": "Kornelijacive",
       "repo": "Priskalkulator-E-"
     }
   }
