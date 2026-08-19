@@ -5,6 +5,10 @@ contextBridge.exposeInMainWorld('electronStore', {
   getIndex: () => ipcRenderer.invoke('store:getIndex'),
   saveIndex: (idx) => ipcRenderer.invoke('store:saveIndex', idx),
 
+  // Priser pr byrå
+  getPriser: () => ipcRenderer.invoke('store:getPriser'),
+  savePriser: (data) => ipcRenderer.invoke('store:savePriser', data),
+
   // Tilbud
   getTilbud: (id) => ipcRenderer.invoke('store:getTilbud', id),
   saveTilbud: (id, data) => ipcRenderer.invoke('store:saveTilbud', id, data),

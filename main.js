@@ -9,6 +9,7 @@ const TILBUD_DIR = path.join(DATA_DIR, 'genererte tilbud');
 const BACKUP_DIR = path.join(DATA_DIR, 'backup');
 const INDEX_FILE = path.join(DATA_DIR, 'tilbud_index.json');
 const BACKUP_META_FILE = path.join(DATA_DIR, 'backup_meta.json');
+const PRISER_FILE = path.join(DATA_DIR, 'priser.json');
 
 // Opprett mapper hvis de ikke finnes
 function ensureDirs() {
@@ -154,6 +155,24 @@ ipcMain.handle('store:saveIndex', (event, idx) => {
     fs.writeFileSync(INDEX_FILE, JSON.stringify(idx, null, 2), 'utf8');
     return true;
   } catch (e) { console.error('Feil ved lagring av indeks:', e); return false; }
+});
+
+// Hent lagrede priser pr byrå
+ipcMain.handle('store:getPriser', () => {
+  try {
+    if (fs.existsSync(PRISER_FILE)) {
+      return JSON.parse(fs.readFileSync(PRISER_FILE, 'utf8'));
+    }
+  } catch (e) { console.error('Feil ved lesing av priser:', e); }
+  return null;
+});
+
+// Lagre priser pr byrå
+ipcMain.handle('store:savePriser', (event, data) => {
+  try {
+    fs.writeFileSync(PRISER_FILE, JSON.stringify(data, null, 2), 'utf8');
+    return true;
+  } catch (e) { console.error('Feil ved lagring av priser:', e); return false; }
 });
 
 // Hent tilbud

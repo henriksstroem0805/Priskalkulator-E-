@@ -7,21 +7,49 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#f5f8ed;--card:#fff;--ink:#2a3318;--muted:#6b7a56;--accent:#90D000;--accent-light:#e8f5cc;--accent-dark:#4a7000;--accent-mid:#7ab800;--border:#d4e2be;--shadow:0 1px 3px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.03);--shadow-lg:0 4px 12px rgba(0,0,0,.07),0 16px 40px rgba(0,0,0,.05);--radius:12px;--font:'Times New Roman',Times,serif;--font-display:'Times New Roman',Times,serif}
-body.theme-odal{--bg:#f0f5eb;--ink:#1a3a0a;--muted:#3d5a2a;--accent:#2d6a1e;--accent-light:#d8e8d0;--accent-dark:#1a4a0a;--accent-mid:#24580f;--border:#b8d4a8}
-body.theme-bs{--bg:#f2f5f2;--ink:#3a4a3a;--muted:#6a7d6a;--accent:#7d9a7d;--accent-light:#dfe8df;--accent-dark:#5a7a5a;--accent-mid:#6d8d6d;--border:#b8c8b8}
+:root{--bg:#f5f8ed;--card:#fff;--soft:#f8faf4;--ink:#2a3318;--ink-soft:#444;--muted:#6b7a56;--accent:#90D000;--accent-light:#e8f5cc;--accent-dark:#4a7000;--accent-mid:#7ab800;--border:#d4e2be;--ok:#2a7000;--ok-bg:#e8f5e9;--warn:#e8a735;--warn-ink:#7a5500;--warn-bg:#fff8e1;--danger:#c44;--danger-bg:#fef0f0;--info:#1e40af;--info-bg:#dbeafe;--on-accent:#213800;--shadow:0 1px 3px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.03);--shadow-lg:0 4px 12px rgba(0,0,0,.07),0 16px 40px rgba(0,0,0,.05);--radius:12px;--font:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;--font-display:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;--font-serif:'Times New Roman',Times,serif}
+body.theme-odal{--bg:#f0f5eb;--ink:#1a3a0a;--muted:#3d5a2a;--accent:#2d6a1e;--accent-light:#d8e8d0;--accent-dark:#1a4a0a;--accent-mid:#24580f;--border:#b8d4a8;--on-accent:#fff}
+body.theme-bs{--bg:#f2f5f2;--ink:#3a4a3a;--muted:#6a7d6a;--accent:#7d9a7d;--accent-light:#dfe8df;--accent-dark:#3d5a3d;--accent-mid:#6d8d6d;--border:#b8c8b8;--on-accent:#16221a}
+/* Tilbudsarket er et dokument – alltid serif og alltid lyst, også i mørk modus */
+.tilbud-page{--font:var(--font-serif);--font-display:var(--font-serif);--card:#fff;--soft:#fafcf6;--ink:#2a3318;--ink-soft:#444;--muted:#6b7a56;--border:#d4e2be;--accent-dark:#4a7000;--accent-light:#e8f5cc;font-family:var(--font-serif);background:#fff;color:#2a3318}
+/* === MØRK MODUS === Følger operativsystemets innstilling.
+   Selektorene tar med body.theme-* slik at de slår byråtemaene, som ellers
+   har høyere spesifisitet enn :root. Tilbudsarket holdes lyst av regelen over. */
+@media(prefers-color-scheme:dark){
+  :root,body,body.theme-odal,body.theme-bs{--bg:#13170f;--card:#1c2217;--soft:#232a1c;--ink:#e8efdc;--ink-soft:#c3cdb2;--muted:#96a683;--border:#333d28;--accent-light:#2a3a1a;--ok:#8ed17a;--ok-bg:#1e2c1a;--warn:#e8b25a;--warn-ink:#f0c274;--warn-bg:#312716;--danger:#e88;--danger-bg:#331d1d;--info:#8ab4f8;--info-bg:#1b2537;--shadow:0 1px 3px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);--shadow-lg:0 4px 12px rgba(0,0,0,.5),0 16px 40px rgba(0,0,0,.4)}
+  body.theme-odal{--accent:#5fb047;--accent-mid:#4e9c38;--on-accent:#0d1f06}
+  body.theme-bs{--accent:#9ab89a;--accent-mid:#8aa88a;--on-accent:#16221a}
+  /* --accent-dark brukes både som tekstfarge og i gradienter. Som tekst må den lysne … */
+  :root,body,body.theme-odal,body.theme-bs{--accent-dark:#a8d94a}
+  /* … og gradientene settes derfor eksplisitt, ellers blir de skrikende lyse */
+  .header,.settings-toolbar,.db-toolbar,.cmp-toolbar,.dash-toolbar,.tilbud-toolbar{background:linear-gradient(135deg,#1f3a08,#3d6b03)}
+  .summary-card{background:linear-gradient(160deg,#1b3206,#2c4f00 60%,#3d6b03)}
+  .lock-icon,.lock-btn{background:linear-gradient(135deg,#2f5200,#6ea000)}
+  .lock-overlay{background:var(--bg)}
+  .settings-panel,.db-panel,.cmp-panel,.dash-panel{background:var(--card)}
+  .db-table thead{background:var(--card)}
+  input,select,textarea,.stepper button,.db-row-actions button{background:var(--card);color:var(--ink)}
+  select,.selskap-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2396a683' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
+  .dash-kpi .dash-kpi-val,.db-table .db-pris,.card-header h2,.settings-group h3,.dash-section h3,.cmp-summary h3{color:var(--accent-dark)}
+  /* Tilbudsforhåndsvisningen er et hvitt ark på mørkt underlag */
+  .tilbud-container{background:#e9ecdf}
+  .tilbud-edit{background:#f2f5ea;color:#2a3318}
+  .tilbud-edit h3{color:#4a7000}
+  .tilbud-edit input,.tilbud-edit textarea{background:#fff;color:#2a3318;border-color:#d4e2be}
+  .tilbud-edit .field label{color:#6b7a56}
+}
 html{font-size:15px;scroll-behavior:smooth}
 body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.6;min-height:100vh}
 .header{background:linear-gradient(135deg,var(--accent-dark) 0%,var(--accent) 60%,var(--accent-mid) 100%);color:#fff;padding:0;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.12);padding-top:env(titlebar-area-height,0)}
 .header-inner{max-width:1260px;margin:0 auto;padding:1.1rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
 .logo{display:flex;align-items:center;gap:.85rem}
-.logo-icon{width:42px;height:42px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent-dark);font-size:.85rem;font-family:var(--font);letter-spacing:-.02em}
+.logo-icon{width:42px;height:42px;background:var(--card);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent-dark);font-size:.85rem;font-family:var(--font);letter-spacing:-.02em}
 .logo h1{font-family:var(--font-display);font-size:1.35rem;font-weight:500}
 .logo span{font-size:.78rem;opacity:.75;display:block;font-family:var(--font);font-weight:400}
 .header-right{display:flex;align-items:center;gap:1rem}
 .header-meta{text-align:right;font-size:.78rem;opacity:.7}
 .selskap-select{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:.4rem .8rem;border-radius:8px;font-family:var(--font);font-size:.82rem;cursor:pointer;outline:none;appearance:none;min-width:200px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23fff' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .7rem center}
-.selskap-select option{color:#2a3318;background:#fff}
+.selskap-select option{color:#2a3318;background:var(--card)}
 .btn-settings{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:.4rem .7rem;border-radius:8px;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:.35rem;font-family:var(--font);transition:.15s}
 .btn-settings:hover{background:rgba(255,255,255,.25)}
 .main{max-width:1260px;margin:0 auto;padding:2rem}
@@ -31,14 +59,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1
 .card-header{padding:1.1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.6rem;cursor:pointer;user-select:none;transition:background .15s}
 .card-header:hover{background:var(--accent-light)}
 .card-header h2{font-family:var(--font-display);font-size:1.05rem;font-weight:500;flex:1;color:var(--accent-dark)}
-.card-header .badge{font-size:.72rem;background:var(--accent);color:#fff;padding:.2rem .65rem;border-radius:20px;font-weight:600}
+.card-header .badge{font-size:.72rem;background:var(--accent);color:var(--on-accent);padding:.2rem .65rem;border-radius:20px;font-weight:600}
 .card-header .chev{width:18px;height:18px;transition:transform .25s;opacity:.35}
 .card-header.open .chev{transform:rotate(180deg)}
 .card-body{padding:1.5rem;display:none}.card-body.open{display:block}
 .field{margin-bottom:1.25rem}.field:last-child{margin-bottom:0}
 .field label{display:block;font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem}
 .field label .hint{font-weight:400;text-transform:none;letter-spacing:0;font-size:.76rem}
-input[type="number"],input[type="text"],input[type="date"],select,textarea{width:100%;padding:.6rem .85rem;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:.9rem;color:var(--ink);background:#fff;transition:border-color .15s,box-shadow .15s;outline:none}
+input[type="number"],input[type="text"],input[type="date"],select,textarea{width:100%;padding:.6rem .85rem;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:.9rem;color:var(--ink);background:var(--card);transition:border-color .15s,box-shadow .15s;outline:none}
 textarea{resize:vertical;min-height:65px}
 input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(144,208,0,.15)}
 input[type="number"]{font-variant-numeric:tabular-nums}
@@ -49,10 +77,10 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .toggle-row .price-tag{font-size:.82rem;color:var(--muted);margin:0 .6rem;white-space:nowrap;font-variant-numeric:tabular-nums}
 .switch{position:relative;width:44px;height:24px;flex-shrink:0}.switch input{opacity:0;width:0;height:0}
 .switch .slider{position:absolute;inset:0;background:var(--border);border-radius:12px;cursor:pointer;transition:.2s}
-.switch .slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.switch .slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:var(--card);border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .switch input:checked+.slider{background:var(--accent)}.switch input:checked+.slider::before{transform:translateX(20px)}
 .stepper{display:flex;align-items:center}
-.stepper button{width:34px;height:34px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-size:1.1rem;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:.15s}
+.stepper button{width:34px;height:34px;border:1.5px solid var(--border);background:var(--card);cursor:pointer;font-size:1.1rem;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:.15s}
 .stepper button:hover{background:var(--accent-light);border-color:var(--accent)}
 .stepper button:first-child{border-radius:8px 0 0 8px}.stepper button:last-child{border-radius:0 8px 8px 0}
 .stepper input{width:70px;text-align:center;border-radius:0;border-left:0;border-right:0}
@@ -79,7 +107,8 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .margin-track{height:5px;background:rgba(255,255,255,.12);border-radius:3px;margin-top:.4rem;overflow:hidden}
 .margin-fill{height:100%;border-radius:3px;transition:width .4s,background .4s}
 .btn{display:inline-flex;align-items:center;gap:.45rem;padding:.65rem 1.2rem;border:none;border-radius:8px;font-family:var(--font);font-size:.85rem;font-weight:600;cursor:pointer;transition:.15s}
-.btn-primary{background:#fff;color:var(--accent-dark)}.btn-primary:hover{background:var(--accent-light)}
+/* Ligger alltid på den grønne gradienten – holdes hvit i begge moduser */
+.btn-primary{background:#fff;color:#4a7000}.btn-primary:hover{background:#e8f5cc}
 .btn-outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.25)}.btn-outline:hover{border-color:#fff;background:rgba(255,255,255,.06)}
 .summary-actions{padding:1rem 1.5rem;display:flex;gap:.65rem;flex-wrap:wrap}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
@@ -96,7 +125,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .card{animation:fadeUp .35s ease both}.card:nth-child(2){animation-delay:.04s}.card:nth-child(3){animation-delay:.08s}.card:nth-child(4){animation-delay:.12s}
 .settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:2rem;backdrop-filter:blur(3px)}
 .settings-overlay.active{display:flex}
-.settings-panel{background:#fff;width:100%;max-width:700px;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden;animation:fadeUp .3s ease}
+.settings-panel{background:var(--card);width:100%;max-width:700px;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden;animation:fadeUp .3s ease}
 .settings-toolbar{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.5rem;background:linear-gradient(135deg,var(--accent-dark),var(--accent));color:#fff}
 .settings-toolbar h2{font-family:var(--font-display);font-size:1rem;font-weight:500}
 .settings-body{padding:1.5rem;max-height:75vh;overflow-y:auto}
@@ -147,8 +176,8 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .tb-sig .sig-name{font-size:.8rem;color:var(--muted)}
 .tb-page2{border-top:2px dashed #d4e2be;padding-top:2rem;margin-top:3rem!important;position:relative}
 .tb-page2::before{content:"Side 2";position:absolute;top:-.8rem;left:50%;transform:translateX(-50%);background:#fff;color:#888;font-size:.7rem;padding:0 .8rem;letter-spacing:.05em}
-@media print{body>*:not(.modal-overlay){display:none!important}.modal-overlay{position:static;display:block!important;background:none;padding:0;backdrop-filter:none}.tilbud-container{box-shadow:none;border-radius:0;max-width:100%}.tilbud-toolbar,.tilbud-edit{display:none!important}.tilbud-page{padding:1.5cm;font-size:10pt;font-synthesis:none;-webkit-font-smoothing:antialiased}.tilbud-page *{font-synthesis:none}.tilbud-page li,.tilbud-page p,.tilbud-page td,.tilbud-page span,.tilbud-page small,.tilbud-page div{font-weight:400}.tilbud-page strong,.tilbud-page b,.tilbud-page th,.tilbud-page tfoot td,.tilbud-page h3,.tilbud-page h4,.tilbud-page h5,.tilbud-page .name{font-weight:700}.tb-table thead th{background:var(--accent-dark)!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.tb-vilkaar{background:#f4f9e8!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.tb-page2{page-break-before:always;border-top:none;margin-top:0!important;padding-top:2cm}.tb-page2::before{display:none}}
-.brreg-dropdown{position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--accent);border-top:none;border-radius:0 0 8px 8px;box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:100;max-height:220px;overflow-y:auto;display:none}
+@media print{body>*:not(.modal-overlay){display:none!important}.modal-overlay{position:static;display:block!important;background:none;padding:0;backdrop-filter:none}.tilbud-container{box-shadow:none;border-radius:0;max-width:100%;background:#fff}.tilbud-toolbar,.tilbud-edit{display:none!important}.tilbud-page{padding:1.5cm;font-size:10pt;font-synthesis:none;-webkit-font-smoothing:antialiased}.tilbud-page *{font-synthesis:none}.tilbud-page li,.tilbud-page p,.tilbud-page td,.tilbud-page span,.tilbud-page small,.tilbud-page div{font-weight:400}.tilbud-page strong,.tilbud-page b,.tilbud-page th,.tilbud-page tfoot td,.tilbud-page h3,.tilbud-page h4,.tilbud-page h5,.tilbud-page .name{font-weight:700}.tb-table thead th{background:var(--accent-dark)!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.tb-vilkaar{background:#f4f9e8!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.tb-page2{page-break-before:always;border-top:none;margin-top:0!important;padding-top:2cm}.tb-page2::before{display:none}}
+.brreg-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1.5px solid var(--accent);border-top:none;border-radius:0 0 8px 8px;box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:100;max-height:220px;overflow-y:auto;display:none}
 .brreg-dropdown.active{display:block}
 .brreg-item{padding:.5rem .85rem;cursor:pointer;border-bottom:1px solid var(--border);font-size:.85rem;transition:background .1s}
 .brreg-item:last-child{border-bottom:none}
@@ -178,7 +207,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 /* Justering varslingsbanner */
 .justering-banner{margin:0 -1.5rem;padding:.7rem 1.5rem;font-size:.8rem;display:none;position:relative}
 .justering-banner.active{display:block}
-.justering-banner.warn-yellow{background:rgba(232,167,53,.15);border-top:2px solid #e8a735;color:#fff}
+.justering-banner.warn-yellow{background:rgba(232,167,53,.15);border-top:2px solid var(--warn);color:#fff}
 .justering-banner.warn-red{background:rgba(204,68,68,.2);border-top:2px solid #c44;color:#fff}
 .justering-banner .banner-close{position:absolute;top:.4rem;right:.8rem;background:none;border:none;color:#fff;opacity:.5;cursor:pointer;font-size:1rem;padding:0;line-height:1}
 .justering-banner .banner-close:hover{opacity:1}
@@ -188,11 +217,11 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .justering-btns{display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap}
 .justering-btns .btn{padding:.45rem .9rem;font-size:.8rem;border-radius:8px;cursor:pointer;font-family:var(--font);font-weight:600;border:none;transition:.15s}
 .justering-btns .btn-preview{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
-.justering-btns .btn-preview:hover{background:var(--accent);color:#fff}
-.justering-btns .btn-apply{background:var(--accent);color:#fff}
+.justering-btns .btn-preview:hover{background:var(--accent);color:var(--on-accent)}
+.justering-btns .btn-apply{background:var(--accent);color:var(--on-accent)}
 .justering-btns .btn-apply:hover{background:var(--accent-dark)}
 /* Tilbudsdatabase modal */
-.db-panel{background:#fff;width:100%;max-width:900px;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden;animation:fadeUp .3s ease;display:flex;flex-direction:column;max-height:90vh}
+.db-panel{background:var(--card);width:100%;max-width:900px;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden;animation:fadeUp .3s ease;display:flex;flex-direction:column;max-height:90vh}
 .db-toolbar{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.5rem;background:linear-gradient(135deg,var(--accent-dark),var(--accent));color:#fff}
 .db-toolbar h2{font-family:var(--font-display);font-size:1rem;font-weight:500}
 .db-toolbar-btns{display:flex;gap:.4rem}
@@ -203,7 +232,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .db-search-bar input::placeholder{color:var(--muted)}
 .db-body{flex:1;overflow-y:auto;padding:0}
 .db-table{width:100%;border-collapse:collapse;font-size:.82rem}
-.db-table thead{position:sticky;top:0;background:#fff;z-index:1}
+.db-table thead{position:sticky;top:0;background:var(--card);z-index:1}
 .db-table th{text-align:left;padding:.6rem 1rem;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:2px solid var(--border);font-weight:600}
 .db-table td{padding:.55rem 1rem;border-bottom:1px solid var(--border);vertical-align:middle}
 .db-table tr:hover{background:var(--accent-light)}
@@ -213,16 +242,16 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .db-table .db-dato{font-size:.78rem;color:var(--muted)}
 .db-table .db-byraa{font-size:.76rem}
 .db-row-actions{display:flex;gap:.3rem}
-.db-row-actions button{padding:.25rem .55rem;font-size:.75rem;border-radius:6px;cursor:pointer;font-family:var(--font);border:1px solid var(--border);background:#fff;color:var(--ink);transition:.15s}
+.db-row-actions button{padding:.25rem .55rem;font-size:.75rem;border-radius:6px;cursor:pointer;font-family:var(--font);border:1px solid var(--border);background:var(--card);color:var(--ink);transition:.15s}
 .db-row-actions button:hover{background:var(--accent-light);border-color:var(--accent)}
-.db-row-actions button.db-del{color:#c44;border-color:#e8c0c0}
-.db-row-actions button.db-del:hover{background:#fef0f0;border-color:#c44}
+.db-row-actions button.db-del{color:var(--danger);border-color:#e8c0c0}
+.db-row-actions button.db-del:hover{background:var(--danger-bg);border-color:var(--danger)}
 .db-meta{padding:.6rem 1.5rem;border-top:1px solid var(--border);font-size:.76rem;color:var(--muted);display:flex;justify-content:space-between}
 .db-empty{text-align:center;padding:3rem 1.5rem;color:var(--muted)}
 .db-empty p{font-size:.9rem;margin-bottom:.3rem}
 .db-empty small{font-size:.78rem;opacity:.7}
 /* Prissammenligning modal */
-.cmp-panel{background:#fff;width:100%;max-width:1000px;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden;animation:fadeUp .3s ease;display:flex;flex-direction:column;max-height:90vh}
+.cmp-panel{background:var(--card);width:100%;max-width:1000px;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden;animation:fadeUp .3s ease;display:flex;flex-direction:column;max-height:90vh}
 .cmp-toolbar{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.5rem;background:linear-gradient(135deg,var(--accent-dark),var(--accent));color:#fff}
 .cmp-toolbar h2{font-family:var(--font-display);font-size:1rem;font-weight:500}
 .cmp-body{flex:1;overflow-y:auto;padding:1.5rem}
@@ -234,8 +263,8 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .cmp-table .cmp-label{font-weight:500;color:var(--ink)}
 .cmp-table .cmp-old{color:var(--muted)}
 .cmp-table .cmp-new{font-weight:600;color:var(--accent-dark)}
-.cmp-table .cmp-pos{color:#2a7000;font-weight:600}
-.cmp-table .cmp-neg{color:#c44;font-weight:600}
+.cmp-table .cmp-pos{color:var(--ok);font-weight:600}
+.cmp-table .cmp-neg{color:var(--danger);font-weight:600}
 .cmp-table .cmp-zero{color:var(--muted);opacity:.5}
 .cmp-table .cmp-section-header td{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding-top:.8rem;border-bottom:1px solid var(--border);font-weight:600;background:var(--accent-light)}
 .cmp-table .cmp-total-row td{font-weight:700;border-top:2px solid var(--accent-dark);font-size:.9rem;padding-top:.6rem}
@@ -244,7 +273,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .cmp-summary .cmp-sum-grid{display:grid;grid-template-columns:1fr auto auto;gap:.3rem .8rem;font-size:.85rem}
 .cmp-summary .cmp-sum-label{color:var(--ink)}
 .cmp-summary .cmp-sum-val{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
-.dash-panel{background:#fff;width:100%;max-width:1000px;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden;animation:fadeUp .3s ease;display:flex;flex-direction:column;max-height:90vh}
+.dash-panel{background:var(--card);width:100%;max-width:1000px;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden;animation:fadeUp .3s ease;display:flex;flex-direction:column;max-height:90vh}
 .dash-toolbar{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.5rem;background:linear-gradient(135deg,var(--accent-dark),var(--accent));color:#fff}
 .dash-toolbar h2{font-family:var(--font-display);font-size:1rem;font-weight:500}
 .dash-body{flex:1;overflow-y:auto;padding:1.5rem}
@@ -261,7 +290,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .dash-table td:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
 .dash-table tr:hover{background:var(--accent-light)}
 .dash-table .dash-total td{font-weight:700;border-top:2px solid var(--accent-dark)}
-.dash-alert{background:#fff3e0;border:1px solid #f5c16c;border-radius:8px;padding:.8rem 1rem;font-size:.82rem;color:#7a5500}
+.dash-alert{background:var(--warn-bg);border:1px solid var(--warn);border-radius:8px;padding:.8rem 1rem;font-size:.82rem;color:var(--warn-ink)}
 .dash-alert-title{font-weight:600;margin-bottom:.4rem}
 .dash-alert ul{margin:0;padding-left:1.2rem}
 .dash-alert li{margin-bottom:.2rem}
@@ -276,11 +305,11 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .lock-icon svg{width:36px;height:36px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .lock-box h1{font-size:1.4rem;color:#2a3318;margin-bottom:.3rem;font-family:var(--font-display)}
 .lock-sub{color:#6b7a56;font-size:.88rem;margin-bottom:2rem}
-.lock-input{width:100%;max-width:320px;padding:.85rem 1.1rem;border:2px solid #d4e2be;border-radius:12px;font-size:1rem;font-family:inherit;outline:none;background:#fff;color:#2a3318;transition:border-color .2s,box-shadow .2s}
+.lock-input{width:100%;max-width:320px;padding:.85rem 1.1rem;border:2px solid #d4e2be;border-radius:12px;font-size:1rem;font-family:inherit;outline:none;background:var(--card);color:#2a3318;transition:border-color .2s,box-shadow .2s}
 .lock-input:focus{border-color:#90D000;box-shadow:0 0 0 4px rgba(144,208,0,.12)}
 .lock-btn{max-width:320px;width:100%;padding:.85rem;border:none;border-radius:12px;background:linear-gradient(135deg,#4a7000,#90D000);color:#fff;font-size:1rem;font-weight:600;font-family:inherit;cursor:pointer;margin-top:.8rem;transition:transform .1s,box-shadow .2s}
 .lock-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(74,112,0,.25)}
-.lock-err{color:#c44;font-size:.85rem;margin-top:.75rem;min-height:1.2rem}
+.lock-err{color:var(--danger);font-size:.85rem;margin-top:.75rem;min-height:1.2rem}
 @keyframes lockShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 .lock-shake{animation:lockShake .3s ease}
 </style>
@@ -307,8 +336,8 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <h1 style="margin-bottom:.5rem">Velkommen til Priskalkulatoren</h1>
 <p style="color:#6b7a56;font-size:.92rem;margin-bottom:1.5rem;line-height:1.5">For å kunne lagre tilbudene dine trygt som filer på PCen, må du velge en lagringsmappe.</p>
 
-<div style="background:#f4f9e8;border-radius:10px;padding:1rem 1.2rem;margin-bottom:1rem;text-align:left;font-size:.85rem;color:#444;line-height:1.6">
-<strong style="color:#4a7000">Slik fungerer det:</strong>
+<div style="background:var(--accent-light);border-radius:10px;padding:1rem 1.2rem;margin-bottom:1rem;text-align:left;font-size:.85rem;color:var(--ink-soft);line-height:1.6">
+<strong style="color:var(--accent-dark)">Slik fungerer det:</strong>
 <ul style="margin:.5rem 0 0 1.2rem">
 <li>Velg (eller opprett) en mappe på PCen, f.eks. <strong>Dokumenter/Priskalkulator</strong></li>
 <li>Alle kunder og tilbud lagres som filer der</li>
@@ -317,17 +346,17 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 </ul>
 </div>
 
-<div style="background:#fff8e1;border-radius:10px;padding:1rem 1.2rem;margin-bottom:1.2rem;text-align:left;font-size:.85rem;color:#444;line-height:1.6;border-left:4px solid #e8a735">
-<strong style="color:#e8a735">⚠ Viktig før du starter:</strong>
+<div style="background:var(--warn-bg);border-radius:10px;padding:1rem 1.2rem;margin-bottom:1.2rem;text-align:left;font-size:.85rem;color:var(--ink-soft);line-height:1.6;border-left:4px solid var(--warn)">
+<strong style="color:var(--warn-ink)">⚠ Viktig før du starter:</strong>
 <p style="margin-top:.4rem">Klikk <strong>? Hjelp</strong>-knappen øverst for å se brukerveiledningen. Husk å gå inn på <strong>⚙ Priser</strong> og tilpasse priser til ditt byrå <strong>før</strong> du begynner å lage tilbud.</p>
 </div>
 
 <button class="lock-btn" onclick="velgLagringsmappe()" style="margin-top:.5rem">📁 Velg lagringsmappe</button>
 
-<div style="margin-top:1rem;font-size:.78rem;color:#888">
+<div style="margin-top:1rem;font-size:.78rem;color:var(--muted)">
 <details style="cursor:pointer">
 <summary>Fungerer ikke dette?</summary>
-<p style="margin-top:.5rem;text-align:left">File System Access API krever Chrome eller Edge. Hvis du bruker Firefox eller Safari, kan du <a href="#" onclick="brukLocalStorage();return false" style="color:#4a7000">fortsette uten filsystem</a> (data lagres i nettleseren).</p>
+<p style="margin-top:.5rem;text-align:left">File System Access API krever Chrome eller Edge. Hvis du bruker Firefox eller Safari, kan du <a href="#" onclick="brukLocalStorage();return false" style="color:var(--accent-dark)">fortsette uten filsystem</a> (data lagres i nettleseren).</p>
 </details>
 </div>
 
@@ -391,18 +420,18 @@ async function tryUnlock(){
 <div class="field-row-3">
   <div class="field"><label>Antall fakturaer / mnd</label><div class="stepper"><button onclick="step('fakturaMnd',-10)">−</button><input type="number" id="fakturaMnd" value="0" min="0" max="9999" oninput="recalc()"><button onclick="step('fakturaMnd',10)">+</button></div></div>
   <div class="field"><label>Minutter pr faktura</label><div class="stepper"><button onclick="stepDec('minPrFaktura',-0.5)">−</button><input type="number" id="minPrFaktura" value="4" min="0.5" max="30" step="0.5" oninput="recalc()"><button onclick="stepDec('minPrFaktura',0.5)">+</button></div></div>
-  <div class="field"><label>Timepris fakturering <span class="hint">(fra innstillinger)</span></label><input type="number" id="timeprisFaktura" value="970" disabled style="background:#f5f8f5;opacity:.7;text-align:center"></div>
+  <div class="field"><label>Timepris fakturering <span class="hint">(fra innstillinger)</span></label><input type="number" id="timeprisFaktura" value="970" disabled style="background:var(--soft);opacity:.7;text-align:center"></div>
 </div>
 <div class="bilag-calc" id="fakturaCalcBox" style="display:none"><div class="calc-detail" id="fakturaCalcDetail"></div><div class="calc-result" id="fakturaCalcResult"></div></div>
 <p class="section-intro" style="margin-top:1.25rem">Bokføring, avstemming og bankavstemming. Pris basert på bilag × minutter × timepris.</p>
 <div class="field-row-3">
   <div class="field"><label>Antall bilag / mnd</label><div class="stepper"><button onclick="step('bilagMnd',-10)">−</button><input type="number" id="bilagMnd" value="0" min="0" max="9999" oninput="recalc()"><button onclick="step('bilagMnd',10)">+</button></div></div>
   <div class="field"><label>Minutter pr bilag</label><div class="stepper"><button onclick="stepDec('minPrBilag',-0.5)">−</button><input type="number" id="minPrBilag" value="4" min="0.5" max="30" step="0.5" oninput="recalc()"><button onclick="stepDec('minPrBilag',0.5)">+</button></div></div>
-  <div class="field"><label>Timepris regnskap <span class="hint">(fra innstillinger)</span></label><input type="number" id="timeprisRegnskap" value="970" disabled style="background:#f5f8f5;opacity:.7;text-align:center"></div>
+  <div class="field"><label>Timepris regnskap <span class="hint">(fra innstillinger)</span></label><input type="number" id="timeprisRegnskap" value="970" disabled style="background:var(--soft);opacity:.7;text-align:center"></div>
 </div>
 <div class="bilag-calc" id="bilagCalcBox" style="display:none"><div class="calc-detail" id="bilagCalcDetail"></div><div class="calc-result" id="bilagCalcResult"></div></div>
 <div class="bilag-calc" id="internTidCalcBox" style="display:none"><div class="calc-detail" id="internTidCalcDetail"></div><div class="calc-result" id="internTidCalcResult"></div></div>
-<div class="bilag-calc" id="kursInterntidBox" style="display:none;background:#fff8e1;border-left:3px solid #e8a735"><div class="calc-detail" id="kursInterntidDetail"></div><div class="calc-result" id="kursInterntidResult"></div></div>
+<div class="bilag-calc" id="kursInterntidBox" style="display:none;background:var(--warn-bg);border-left:3px solid var(--warn)"><div class="calc-detail" id="kursInterntidDetail"></div><div class="calc-result" id="kursInterntidResult"></div></div>
 <div class="toggle-row" style="margin-top:.75rem"><div class="label-text">MVA-pliktig (terminmva)<small id="lbl-mvaTermin">450 kr/mnd (5 400 kr/år)</small></div><span class="price-tag" id="tag-mvaTermin">450 kr</span><label class="switch"><input type="checkbox" id="mvaTermin" onchange="if(this.checked){$('mvaAar').checked=false}recalc()"><span class="slider"></span></label></div>
 <div class="toggle-row"><div class="label-text">MVA-pliktig (årstermin)<small id="lbl-mvaAar">1 100 kr/år</small></div><span class="price-tag" id="tag-mvaAar">92 kr</span><label class="switch"><input type="checkbox" id="mvaAar" onchange="if(this.checked){$('mvaTermin').checked=false}recalc()"><span class="slider"></span></label></div>
 <div class="toggle-row"><div class="label-text">Omvendt MVA<small id="lbl-omvendtMva">3 600 kr/år (300 kr/mnd)</small></div><span class="price-tag" id="tag-omvendtMva">300 kr</span><label class="switch"><input type="checkbox" id="omvendtMva" onchange="recalc()"><span class="slider"></span></label></div>
@@ -459,14 +488,14 @@ async function tryUnlock(){
 <div class="sidebar"><div class="summary-card">
 <div class="summary-header"><h2>Prisoversikt <span id="autoSaveIndicator" style="font-size:.7rem;font-weight:400;color:#90D000;opacity:0;transition:opacity .3s"></span></h2><div class="customer-name" id="summaryKunde">Ingen kunde valgt</div></div>
 <div class="summary-body">
-<div class="sum-section"><h3>Regnskap</h3><div class="sum-line" id="line-faktura"><span>Fakturering</span><span class="val">–</span></div><div class="sum-line" id="line-bilag"><span>Bilagsbehandling</span><span class="val">–</span></div><div class="sum-line" id="line-interntid"><span>Interntid</span><span class="val">–</span></div><div class="sum-line" id="line-mva"><span>MVA</span><span class="val">–</span></div><div class="sum-line" id="line-omvendtMva"><span>Omvendt MVA</span><span class="val">–</span></div><div class="sum-line" id="line-prosjekt"><span>Prosjektregnskap</span><span class="val">–</span></div><div class="sum-line" id="line-purring"><span>Purring/inkasso</span><span class="val">–</span></div></div>
+<div class="sum-section"><h3>Regnskap</h3><div class="sum-line" id="line-faktura"><span>Fakturering</span><span class="val">–</span></div><div class="sum-line" id="line-bilag"><span>Bilagsbehandling</span><span class="val">–</span></div><div class="sum-line" id="line-interntid"><span>Interntid</span><span class="val">–</span></div><div class="sum-line" id="line-kursInterntid" title="Intern kostnad – bakt inn i månedsprisen, men vises ikke som egen post i tilbudet"><span>Kurs/avtalt interntid</span><span class="val">–</span></div><div class="sum-line" id="line-mva"><span>MVA</span><span class="val">–</span></div><div class="sum-line" id="line-omvendtMva"><span>Omvendt MVA</span><span class="val">–</span></div><div class="sum-line" id="line-prosjekt"><span>Prosjektregnskap</span><span class="val">–</span></div><div class="sum-line" id="line-purring"><span>Purring/inkasso</span><span class="val">–</span></div></div>
 <div class="sum-section"><h3>Lønn</h3><div class="sum-line" id="line-lonnKjoring"><span>Lønnskjøring</span><span class="val">–</span></div><div class="sum-line" id="line-lonnAvst"><span>Avstemming lønn</span><span class="val">–</span></div><div class="sum-line" id="line-lonnsRapp"><span>Lønnsrapportering</span><span class="val">–</span></div><div class="sum-line" id="line-sammenstilling"><span>Sammenstilling</span><span class="val">–</span></div><div class="sum-line" id="line-ekstraKjor"><span>Ekstra kjøringer</span><span class="val">–</span></div></div>
 <div class="sum-section"><h3>Årsoppgjør, oppgaver og rapp. (fordelt /mnd)</h3><div class="sum-line" id="line-aarsAS"><span>Årsoppgjør AS</span><span class="val">–</span></div><div class="sum-line" id="line-skattEPF"><span>Skattemelding EPF</span><span class="val">–</span></div><div class="sum-line" id="line-holding"><span>Holdingselskap</span><span class="val">–</span></div><div class="sum-line" id="line-aksjonaer"><span>Aksjonærreg.</span><span class="val">–</span></div><div class="sum-line" id="line-periodeAar"><span>Syst.kostnader</span><span class="val">–</span></div><div class="sum-line" id="line-sameieOppgave"><span>Sameie oppgave</span><span class="val">–</span></div><div class="sum-line" id="line-periodiskRapp"><span>Periodisk rapp.</span><span class="val">–</span></div></div>
 <div class="sum-section"><h3>Kvalitet & Rådgivning</h3><div class="sum-line" id="line-kval"><span>Kvalitetsarbeid</span><span class="val">–</span></div><div class="sum-line" id="line-raadgiv"><span>Rådgivning (fordelt /mnd)</span><span class="val">–</span></div><div class="sum-line" id="line-senior"><span>Seniorrådgivning (fordelt /mnd)</span><span class="val">–</span></div></div>
 </div>
 <div class="sum-total"><span class="label">Sum pr mnd</span><span class="amount" id="totalMnd">0 kr</span></div>
 <div class="sum-annual">Estimert årspris: <strong id="totalAar">0 kr</strong></div>
-<div class="sum-onetime" id="rabattSection"><h3>Rabatt månedspris</h3><div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem"><label style="font-size:.8rem;white-space:nowrap">Rabatt %:</label><select id="rabattPct" onchange="recalc()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;padding:.3rem .5rem;border-radius:6px;font-family:var(--font);font-size:.82rem;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23fff' stroke-width='1.5' fill='none'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right .5rem center;padding-right:1.6rem"><option value="0" style="color:#2a3318;background:#fff">0 %</option><option value="5" style="color:#2a3318;background:#fff">5 %</option><option value="10" style="color:#2a3318;background:#fff">10 %</option><option value="15" style="color:#2a3318;background:#fff">15 %</option><option value="20" style="color:#2a3318;background:#fff">20 %</option><option value="25" style="color:#2a3318;background:#fff">25 %</option><option value="30" style="color:#2a3318;background:#fff">30 %</option><option value="40" style="color:#2a3318;background:#fff">40 %</option><option value="50" style="color:#2a3318;background:#fff">50 %</option></select><label style="font-size:.8rem;white-space:nowrap">i</label><select id="rabattMnd" onchange="recalc()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;padding:.3rem .5rem;border-radius:6px;font-family:var(--font);font-size:.82rem;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23fff' stroke-width='1.5' fill='none'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right .5rem center;padding-right:1.6rem"><option value="0" style="color:#2a3318;background:#fff">–</option><option value="2" style="color:#2a3318;background:#fff">2 mnd</option><option value="4" style="color:#2a3318;background:#fff">4 mnd</option><option value="6" style="color:#2a3318;background:#fff">6 mnd</option><option value="8" style="color:#2a3318;background:#fff">8 mnd</option><option value="10" style="color:#2a3318;background:#fff">10 mnd</option><option value="12" style="color:#2a3318;background:#fff">12 mnd</option></select></div><div class="sum-line" id="line-rabattMndPris" style="display:none"><span>Rabattert mndpris</span><span class="val">–</span></div><div class="sum-line" id="line-rabattVerdi" style="display:none"><span>Total rabattverdi</span><span class="val">–</span></div><div id="rabattEffektivInfo" style="font-size:.76rem;opacity:.6;display:none"></div></div>
+<div class="sum-onetime" id="rabattSection"><h3>Rabatt månedspris</h3><div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem"><label style="font-size:.8rem;white-space:nowrap">Rabatt %:</label><select id="rabattPct" onchange="recalc()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;padding:.3rem .5rem;border-radius:6px;font-family:var(--font);font-size:.82rem;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23fff' stroke-width='1.5' fill='none'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right .5rem center;padding-right:1.6rem"><option value="0" style="color:#2a3318;background:var(--card)">0 %</option><option value="5" style="color:#2a3318;background:var(--card)">5 %</option><option value="10" style="color:#2a3318;background:var(--card)">10 %</option><option value="15" style="color:#2a3318;background:var(--card)">15 %</option><option value="20" style="color:#2a3318;background:var(--card)">20 %</option><option value="25" style="color:#2a3318;background:var(--card)">25 %</option><option value="30" style="color:#2a3318;background:var(--card)">30 %</option><option value="40" style="color:#2a3318;background:var(--card)">40 %</option><option value="50" style="color:#2a3318;background:var(--card)">50 %</option></select><label style="font-size:.8rem;white-space:nowrap">i</label><select id="rabattMnd" onchange="recalc()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;padding:.3rem .5rem;border-radius:6px;font-family:var(--font);font-size:.82rem;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23fff' stroke-width='1.5' fill='none'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right .5rem center;padding-right:1.6rem"><option value="0" style="color:#2a3318;background:var(--card)">–</option><option value="2" style="color:#2a3318;background:var(--card)">2 mnd</option><option value="4" style="color:#2a3318;background:var(--card)">4 mnd</option><option value="6" style="color:#2a3318;background:var(--card)">6 mnd</option><option value="8" style="color:#2a3318;background:var(--card)">8 mnd</option><option value="10" style="color:#2a3318;background:var(--card)">10 mnd</option><option value="12" style="color:#2a3318;background:var(--card)">12 mnd</option></select></div><div class="sum-line" id="line-rabattMndPris" style="display:none"><span>Rabattert mndpris</span><span class="val">–</span></div><div class="sum-line" id="line-rabattVerdi" style="display:none"><span>Total rabattverdi</span><span class="val">–</span></div><div id="rabattEffektivInfo" style="font-size:.76rem;opacity:.6;display:none"></div></div>
 <div class="margin-bar"><div class="margin-label">Estimert dekningsgrad</div><div class="margin-row"><span class="margin-pct" id="dgPct">0 %</span><span class="margin-kr" id="dgKr">DB: 0 kr/mnd</span></div><div class="margin-track"><div class="margin-fill" id="dgBar" style="width:0;background:#c44"></div></div></div>
 <div class="justering-banner" id="justeringBanner"><button class="banner-close" onclick="dismissJusteringBanner()">&times;</button><span id="justeringBannerText"></span> <a onclick="openSettings()">Åpne prisjustering</a></div>
 <div class="prishistorikk-section" id="prishistorikkSection"><h3>Prishistorikk</h3><div id="prishistorikkContent"></div></div>
@@ -533,7 +562,7 @@ async function tryUnlock(){
 <div id="internTidTrinnContainer"></div>
 <button class="btn btn-outline" style="margin-top:.4rem;font-size:.78rem" onclick="addInternTidTrinn()">+ Legg til trinn</button>
 <div style="margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--border)">
-<p style="font-size:.78rem;color:#666;margin-bottom:.4rem">Kurs og avtalt interntid (intern kostnad — kun synlig i kalkulatoren, ikke i tilbudet)</p>
+<p style="font-size:.78rem;color:#666;margin-bottom:.4rem">Kurs og avtalt interntid (bakes inn i månedsprisen — vises kun i kalkulatoren, aldri som egen post i tilbudet)</p>
 <div class="settings-row"><label>Timepris (kr/t)</label><input type="number" id="set_kursTimepris" value="2500" onchange="applySettings()"></div>
 <div class="settings-row"><label>Timer pr mnd</label><input type="number" id="set_kursTimer" value="1.5" step="0.25" onchange="applySettings()"></div>
 </div>
@@ -566,10 +595,10 @@ async function tryUnlock(){
 <div class="db-search-bar"><input type="text" id="koSearch" placeholder="Søk på kundenavn eller org.nr..." oninput="renderKundeOversikt()"></div>
 <div class="db-body" id="koBody" style="max-height:60vh"></div>
 <div class="db-meta" id="koMeta"></div>
-<div style="padding:.6rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.5rem;align-items:center;justify-content:space-between;background:#f8faf4">
-<div style="font-size:.78rem;color:#4a7000;font-weight:600">📊 Bulk-import — opprett flere kunder fra Excel- eller CSV-fil</div>
+<div style="padding:.6rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.5rem;align-items:center;justify-content:space-between;background:var(--soft)">
+<div style="font-size:.78rem;color:var(--accent-dark);font-weight:600">📊 Bulk-import — opprett flere kunder fra Excel- eller CSV-fil</div>
 <div style="display:flex;gap:.5rem">
-<button onclick="downloadBulkTemplate()" style="font-size:.78rem;padding:.4rem .8rem;background:#fff;color:#4a7000;border:1px solid #90D000;border-radius:6px;cursor:pointer;font-weight:600">⬇ Last ned mal</button>
+<button onclick="downloadBulkTemplate()" style="font-size:.78rem;padding:.4rem .8rem;background:var(--card);color:var(--accent-dark);border:1px solid var(--accent);border-radius:6px;cursor:pointer;font-weight:600">⬇ Last ned mal</button>
 <button onclick="$('bulkImportInput').click()" style="font-size:.78rem;padding:.4rem .8rem;background:#4a7000;color:#fff;border:1px solid #4a7000;border-radius:6px;cursor:pointer;font-weight:600">⬆ Importer kunder</button>
 </div>
 </div>
@@ -577,13 +606,13 @@ async function tryUnlock(){
 <div id="koBackupSection" style="padding:.8rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.5rem;align-items:center;justify-content:space-between">
 <div id="koBackupInfo" style="font-size:.78rem;color:var(--muted)"></div>
 <div style="display:flex;gap:.5rem">
-<button onclick="exportDatabase()" style="font-size:.78rem;padding:.4rem .8rem;background:#f4f9e8;color:#4a7000;border:1px solid #90D000;border-radius:6px;cursor:pointer;font-weight:600">⬇ Eksporter backup</button>
-<button onclick="$('dbImportInput').click()" style="font-size:.78rem;padding:.4rem .8rem;background:#f4f9e8;color:#4a7000;border:1px solid #90D000;border-radius:6px;cursor:pointer;font-weight:600">⬆ Importer backup</button>
+<button onclick="exportDatabase()" style="font-size:.78rem;padding:.4rem .8rem;background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--accent);border-radius:6px;cursor:pointer;font-weight:600">⬇ Eksporter backup</button>
+<button onclick="$('dbImportInput').click()" style="font-size:.78rem;padding:.4rem .8rem;background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--accent);border-radius:6px;cursor:pointer;font-weight:600">⬆ Importer backup</button>
 </div>
 </div>
 <div id="koElectronBackup" style="padding:.6rem 1.2rem;border-top:1px solid var(--border);display:none;align-items:center;justify-content:space-between">
 <div style="font-size:.78rem;color:var(--muted)">✓ Tilbud lagres som filer i lagringsmappen din. Daglig backup tas automatisk i <strong>backup/</strong>-undermappen.</div>
-<button onclick="$('dbImportInput').click()" style="font-size:.78rem;padding:.4rem .8rem;background:#f4f9e8;color:#4a7000;border:1px solid #90D000;border-radius:6px;cursor:pointer;font-weight:600">⬆ Importer backup</button>
+<button onclick="$('dbImportInput').click()" style="font-size:.78rem;padding:.4rem .8rem;background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--accent);border-radius:6px;cursor:pointer;font-weight:600">⬆ Importer backup</button>
 </div>
 </div></div>
 
@@ -596,30 +625,30 @@ async function tryUnlock(){
 <p style="font-size:1.05rem;color:#2a3318;margin-bottom:1.5rem;font-weight:600">Kom i gang i fire enkle steg:</p>
 
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem;margin-bottom:2.5rem">
-<div style="background:#fff;border-radius:14px;padding:1.5rem;border:2px solid #90D000;box-shadow:0 2px 8px rgba(74,112,0,.1)">
+<div style="background:var(--card);border-radius:14px;padding:1.5rem;border:2px solid var(--accent);box-shadow:0 2px 8px rgba(74,112,0,.1)">
 <div style="display:inline-block;background:#4a7000;color:#fff;font-size:.85rem;font-weight:700;width:28px;height:28px;line-height:28px;text-align:center;border-radius:50%;margin-bottom:.6rem">1</div>
 <h4 style="margin-bottom:.5rem;color:#2a3318;font-size:1.05rem">Velg byrå</h4>
-<p style="font-size:.92rem;color:#444;line-height:1.7">Velg ditt byrå i nedtrekkslisten øverst til venstre. Dette styrer hvilke priser og logo som brukes i tilbud.</p>
+<p style="font-size:.92rem;color:var(--ink-soft);line-height:1.7">Velg ditt byrå i nedtrekkslisten øverst til venstre. Dette styrer hvilke priser og logo som brukes i tilbud.</p>
 </div>
-<div style="background:#fff;border-radius:14px;padding:1.5rem;border:2px solid #90D000;box-shadow:0 2px 8px rgba(74,112,0,.1)">
+<div style="background:var(--card);border-radius:14px;padding:1.5rem;border:2px solid var(--accent);box-shadow:0 2px 8px rgba(74,112,0,.1)">
 <div style="display:inline-block;background:#4a7000;color:#fff;font-size:.85rem;font-weight:700;width:28px;height:28px;line-height:28px;text-align:center;border-radius:50%;margin-bottom:.6rem">2</div>
 <h4 style="margin-bottom:.5rem;color:#2a3318;font-size:1.05rem">Tilpass priser</h4>
-<p style="font-size:.92rem;color:#444;line-height:1.7">Klikk <strong>⚙ Priser</strong> for å justere timepriser og faste priser til dine satser. Endringene gjelder kun for ditt byrå.</p>
+<p style="font-size:.92rem;color:var(--ink-soft);line-height:1.7">Klikk <strong>⚙ Priser</strong> for å justere timepriser og faste priser til dine satser. Endringene gjelder kun for ditt byrå.</p>
 </div>
-<div style="background:#fff;border-radius:14px;padding:1.5rem;border:2px solid #90D000;box-shadow:0 2px 8px rgba(74,112,0,.1)">
+<div style="background:var(--card);border-radius:14px;padding:1.5rem;border:2px solid var(--accent);box-shadow:0 2px 8px rgba(74,112,0,.1)">
 <div style="display:inline-block;background:#4a7000;color:#fff;font-size:.85rem;font-weight:700;width:28px;height:28px;line-height:28px;text-align:center;border-radius:50%;margin-bottom:.6rem">3</div>
 <h4 style="margin-bottom:.5rem;color:#2a3318;font-size:1.05rem">Velg eller opprett kunde</h4>
-<p style="font-size:.92rem;color:#444;line-height:1.7">I kundeoversikten klikker du på en kunde for å fortsette et tilbud, eller <strong>+ Ny kunde</strong> for å starte et nytt.</p>
+<p style="font-size:.92rem;color:var(--ink-soft);line-height:1.7">I kundeoversikten klikker du på en kunde for å fortsette et tilbud, eller <strong>+ Ny kunde</strong> for å starte et nytt.</p>
 </div>
-<div style="background:#fff;border-radius:14px;padding:1.5rem;border:2px solid #90D000;box-shadow:0 2px 8px rgba(74,112,0,.1)">
+<div style="background:var(--card);border-radius:14px;padding:1.5rem;border:2px solid var(--accent);box-shadow:0 2px 8px rgba(74,112,0,.1)">
 <div style="display:inline-block;background:#4a7000;color:#fff;font-size:.85rem;font-weight:700;width:28px;height:28px;line-height:28px;text-align:center;border-radius:50%;margin-bottom:.6rem">4</div>
 <h4 style="margin-bottom:.5rem;color:#2a3318;font-size:1.05rem">Lag tilbud</h4>
-<p style="font-size:.92rem;color:#444;line-height:1.7">Fyll inn kundeinfo og tjenester. Tilbudet lagres automatisk som fil. Klikk <strong>📄 Generer tilbudsark</strong> for å lage ferdig tilbud og PDF.</p>
+<p style="font-size:.92rem;color:var(--ink-soft);line-height:1.7">Fyll inn kundeinfo og tjenester. Tilbudet lagres automatisk som fil. Klikk <strong>📄 Generer tilbudsark</strong> for å lage ferdig tilbud og PDF.</p>
 </div>
 </div>
 
 <h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Kundeoversikt</h3>
-<div style="background:#f8faf4;border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
+<div style="background:var(--soft);border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
 <p style="margin-bottom:.8rem;font-size:.95rem">Når du åpner programmet ser du en <strong>kundeoversikt</strong> med alle lagrede kunder, gruppert per organisasjon.</p>
 <ul style="margin-left:1.4rem;margin-bottom:.5rem;font-size:.93rem">
 <li style="margin-bottom:.4rem"><strong>Klikk på et kundekort</strong> for å ekspandere og se alle tilbud for denne kunden</li>
@@ -632,7 +661,7 @@ async function tryUnlock(){
 </div>
 
 <h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Prisinnstillinger</h3>
-<div style="background:#f8faf4;border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
+<div style="background:var(--soft);border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
 <p style="margin-bottom:.8rem;font-size:.95rem">Under <strong>⚙ Priser</strong> kan du justere alle satser for ditt byrå:</p>
 <ul style="margin-left:1.4rem;margin-bottom:.8rem;font-size:.93rem">
 <li style="margin-bottom:.4rem"><strong>Timepriser</strong> — regnskap, fakturering, lønn, rådgivning</li>
@@ -640,22 +669,22 @@ async function tryUnlock(){
 <li style="margin-bottom:.4rem"><strong>Interntid</strong> — trappetrinnsmodell basert på antall bilag</li>
 <li style="margin-bottom:.4rem"><strong>Intern kostnad</strong> — timekostnad og overhead for dekningsgrad</li>
 </ul>
-<div style="background:#e8f5e9;border-radius:10px;padding:1rem;border-left:4px solid #2a7000">
-<strong style="color:#2a7000">Merk:</strong> Prisendringene lagres i programmet og gjelder kun for ditt byrå. Du trenger ikke gjøre noe for å beholde dem mellom hver gang du bruker programmet.
+<div style="background:var(--ok-bg);border-radius:10px;padding:1rem;border-left:4px solid var(--ok)">
+<strong style="color:var(--ok)">Merk:</strong> Prisendringene gjelder kun for ditt byrå og lagres automatisk i <strong>priser.json</strong> — i lagringsmappen din, eller i programmets datamappe i skrivebordsversjonen. Du trenger ikke gjøre noe for å beholde dem mellom hver gang du bruker programmet.
 </div>
 </div>
 
 <h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Lagringsmappe</h3>
-<div style="background:#f8faf4;border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
+<div style="background:var(--soft);border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
 <p style="margin-bottom:.8rem;font-size:.95rem">Første gang du åpner priskalkulatoren blir du bedt om å velge en <strong>lagringsmappe</strong> på PCen. Vi anbefaler å lage en mappe under Dokumenter, f.eks. <strong>Dokumenter/Priskalkulator</strong>.</p>
 <p style="margin-bottom:.8rem;font-size:.95rem">Alle kunder, tilbud og backup lagres som filer i denne mappen. Nettleseren husker valget — du gjør dette kun én gang.</p>
-<div style="background:#fff8e1;border-radius:10px;padding:1rem;border-left:4px solid #e8a735">
-<strong style="color:#e8a735">Krav:</strong> Krever <strong>Chrome</strong> eller <strong>Edge</strong> nettleser. Firefox og Safari støtter ikke filsystem-tilgang i nettsider.
+<div style="background:var(--warn-bg);border-radius:10px;padding:1rem;border-left:4px solid var(--warn)">
+<strong style="color:var(--warn-ink)">Krav:</strong> Krever <strong>Chrome</strong> eller <strong>Edge</strong> nettleser. Firefox og Safari støtter ikke filsystem-tilgang i nettsider.
 </div>
 </div>
 
 <h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Automatisk lagring</h3>
-<div style="background:#f8faf4;border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
+<div style="background:var(--soft);border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
 <p style="margin-bottom:.8rem;font-size:.95rem">Tilbud lagres <strong>automatisk</strong> som JSON-filer i lagringsmappen mens du jobber.</p>
 <ul style="margin-left:1.4rem;margin-bottom:.8rem;font-size:.93rem">
 <li style="margin-bottom:.4rem">Lagring skjer automatisk når kundenavn er fylt inn</li>
@@ -666,21 +695,21 @@ async function tryUnlock(){
 </div>
 
 <h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Generere tilbudsark</h3>
-<div style="background:#f8faf4;border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
+<div style="background:var(--soft);border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
 <ol style="margin-left:1.4rem;font-size:.93rem">
 <li style="margin-bottom:.5rem">Fyll inn kundeinfo, velg tjenester og juster volum</li>
 <li style="margin-bottom:.5rem">Klikk <strong>📄 Generer tilbudsark</strong></li>
 <li style="margin-bottom:.5rem">Rediger tilbudstekst, dato og tilbudsnummer</li>
 <li style="margin-bottom:.5rem">Klikk <strong>Skriv ut / PDF</strong> for å lagre tilbudsarket som PDF eller skrive ut</li>
 </ol>
-<div style="background:#e8f5e9;border-radius:10px;padding:1rem;border-left:4px solid #2a7000;margin-top:.8rem">
-<strong style="color:#2a7000">Automatisk detaljvisning:</strong> Når du klikker Generer tilbudsark lagres også en detaljert HTML-fil med alle parametre i <strong>genererte tilbud/</strong>-mappen. Filnavnet er <strong>dato_kundenavn_byrå_tid.html</strong>.
+<div style="background:var(--ok-bg);border-radius:10px;padding:1rem;border-left:4px solid var(--ok);margin-top:.8rem">
+<strong style="color:var(--ok)">Automatisk detaljvisning:</strong> Når du klikker Generer tilbudsark lagres også en detaljert HTML-fil med alle parametre i <strong>genererte tilbud/</strong>-mappen. Filnavnet er <strong>dato_kundenavn_byrå_tid.html</strong>.
 </div>
-<p style="margin-top:.8rem;font-size:.93rem">Kunden markeres som <strong style="color:#2a7000">Tilbud generert</strong> i kundeoversikten.</p>
+<p style="margin-top:.8rem;font-size:.93rem">Kunden markeres som <strong style="color:var(--ok)">Tilbud generert</strong> i kundeoversikten.</p>
 </div>
 
 <h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Revidere tilbud</h3>
-<div style="background:#f8faf4;border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
+<div style="background:var(--soft);border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
 <p style="margin-bottom:.8rem;font-size:.95rem">Slik reviderer du et eksisterende tilbud (f.eks. etter 6 måneder):</p>
 <ol style="margin-left:1.4rem;font-size:.93rem">
 <li style="margin-bottom:.5rem">Åpne kundeoversikten og klikk på kunden</li>
@@ -688,23 +717,23 @@ async function tryUnlock(){
 <li style="margin-bottom:.5rem">Alle kundedetaljer beholdes — juster volum, tjenester eller priser</li>
 <li style="margin-bottom:.5rem">Generer nytt tilbudsark</li>
 </ol>
-<div style="background:#e8f5e9;border-radius:10px;padding:1rem;border-left:4px solid #2a7000;margin-top:.8rem">
-<strong style="color:#2a7000">Sammenligning:</strong> Åpne fjorårets tilbud med <strong>Vis tilbud</strong> på én skjerm og jobb med nytt tilbud på den andre — du ser alle parametre side om side.
+<div style="background:var(--ok-bg);border-radius:10px;padding:1rem;border-left:4px solid var(--ok);margin-top:.8rem">
+<strong style="color:var(--ok)">Sammenligning:</strong> Åpne fjorårets tilbud med <strong>Vis tilbud</strong> på én skjerm og jobb med nytt tilbud på den andre — du ser alle parametre side om side.
 </div>
 </div>
 
 <h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Mappestruktur</h3>
-<div style="background:#f8faf4;border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
+<div style="background:var(--soft);border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
 <p style="margin-bottom:.8rem;font-size:.95rem">I lagringsmappen finner du:</p>
 <ul style="margin-left:1.4rem;margin-bottom:.5rem;font-size:.93rem;list-style:none">
 <li style="margin-bottom:.4rem">📁 <strong>genererte tilbud/</strong> — JSON-filer for alle tilbud + detaljerte HTML-filer</li>
 <li style="margin-bottom:.4rem">📁 <strong>backup/</strong> — automatiske daglige backup-filer</li>
 </ul>
-<p style="font-size:.88rem;color:#555;margin-top:.5rem">Du kan åpne HTML-filene direkte i nettleseren for å se tilbudet — eller skrive ut til PDF derfra.</p>
+<p style="font-size:.88rem;color:var(--ink-soft);margin-top:.5rem">Du kan åpne HTML-filene direkte i nettleseren for å se tilbudet — eller skrive ut til PDF derfra.</p>
 </div>
 
 <h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Automatisk backup</h3>
-<div style="background:#f8faf4;border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
+<div style="background:var(--soft);border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:2rem">
 <p style="margin-bottom:.8rem;font-size:.95rem">Det tas <strong>automatisk backup</strong> av alle tilbud hver dag — du trenger ikke gjøre noe.</p>
 <ul style="margin-left:1.4rem;margin-bottom:.5rem;font-size:.93rem">
 <li style="margin-bottom:.4rem">Backup tas automatisk ved oppstart (maks én per dag)</li>
@@ -712,13 +741,13 @@ async function tryUnlock(){
 <li style="margin-bottom:.4rem">Backup eldre enn 30 dager slettes automatisk</li>
 <li style="margin-bottom:.4rem">Bruk <strong>⬆ Importer backup</strong> nederst i kundeoversikten hvis du trenger å gjenopprette</li>
 </ul>
-<div style="background:#e8f5e9;border-radius:10px;padding:1rem;border-left:4px solid #2a7000;margin-top:.8rem">
-<strong style="color:#2a7000">Overføre til annen PC:</strong> Kopier hele lagringsmappen til en USB-pinne eller skytjeneste, og åpne priskalkulatoren på den nye PCen. Velg samme mappe der, og alle kunder vises automatisk.
+<div style="background:var(--ok-bg);border-radius:10px;padding:1rem;border-left:4px solid var(--ok);margin-top:.8rem">
+<strong style="color:var(--ok)">Overføre til annen PC:</strong> Kopier hele lagringsmappen til en USB-pinne eller skytjeneste, og åpne priskalkulatoren på den nye PCen. Velg samme mappe der, og alle kunder vises automatisk.
 </div>
 </div>
 
 <h3 style="margin-bottom:1rem;color:var(--accent-dark);border-bottom:3px solid var(--accent);padding-bottom:.5rem;font-size:1.1rem">Oppdateringer</h3>
-<div style="background:#f8faf4;border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:1rem">
+<div style="background:var(--soft);border-radius:12px;padding:1.3rem 1.5rem;margin-bottom:1rem">
 <p style="margin-bottom:.8rem;font-size:.95rem">Priskalkulatoren oppdateres <strong>automatisk</strong> — hver gang du åpner siden får du nyeste versjon med nye funksjoner.</p>
 <p style="margin-bottom:.8rem;font-size:.95rem">Du trenger ikke gjøre noe selv. Dataene dine i lagringsmappen forblir uendret når koden oppdateres.</p>
 </div>
@@ -751,15 +780,15 @@ async function tryUnlock(){
 <div class="field"><label>Ekstra vilkår</label><textarea id="tilbudEkstra" rows="2" placeholder="Eventuelle tilleggsvilkår..."></textarea></div>
 </div>
 <div class="tilbud-page" id="tilbudPage"><div style="text-align:center;margin-bottom:1.5rem"><img id="tbPageLogo" src="" alt="" style="max-width:220px;height:auto;display:none"></div>
-<div class="tb-head"><div class="company"><h3 id="tbSelskap"></h3><p id="tbSelskapOrg" style="font-size:.82rem;color:#555;margin-bottom:.15rem"></p><p>Autorisert regnskapsførerselskap</p></div><div class="meta"><strong>TILBUD</strong><span id="tbNr"></span><br><span id="tbDato"></span><br>Gyldig til: <span id="tbGyldig"></span></div></div>
+<div class="tb-head"><div class="company"><h3 id="tbSelskap"></h3><p id="tbSelskapOrg" style="font-size:.82rem;color:var(--ink-soft);margin-bottom:.15rem"></p><p>Autorisert regnskapsførerselskap</p></div><div class="meta"><strong>TILBUD</strong><span id="tbNr"></span><br><span id="tbDato"></span><br>Gyldig til: <span id="tbGyldig"></span></div></div>
 <div class="tb-recip"><h4>Tilbud til</h4><div class="name" id="tbKunde">–</div><div class="details"><span id="tbOrg"></span><br><span id="tbKontakt"></span></div></div>
 <div class="tb-intro" id="tbIntro"></div>
 <table class="tb-table"><thead><tr><th style="width:55%">Tjenester</th><th style="text-align:right">Pris</th></tr></thead><tbody id="tbBody"></tbody><tfoot id="tbFoot"></tfoot></table>
 <div id="tbEngWrap" style="display:none"><table class="tb-table" style="margin-top:-.5rem"><thead><tr><th style="width:55%">Engangstjenester</th><th style="text-align:right">Pris</th></tr></thead><tbody id="tbEngBody"></tbody><tfoot id="tbEngFoot"></tfoot></table></div>
 <div class="tb-vilkaar tb-page2" style="margin-top:2rem"><h4>Hva inngår i våre tjenester</h4>
-<p style="font-size:.82rem;color:#444;margin-bottom:.7rem">Som autorisert regnskapsførerselskap utfører vi vårt arbeid i henhold til regnskapsførerloven og God Regnskapsføringsskikk (GRFS). Dette innebærer blant annet:</p>
+<p style="font-size:.82rem;color:var(--ink-soft);margin-bottom:.7rem">Som autorisert regnskapsførerselskap utfører vi vårt arbeid i henhold til regnskapsførerloven og God Regnskapsføringsskikk (GRFS). Dette innebærer blant annet:</p>
 <ul id="tbInngaar"></ul></div>
-<div class="tb-vilkaar"><h4>Forbehold og vilkår</h4><ul><li>Alle priser er oppgitt eks. mva.</li><li>Tilbudet er basert på en fast månedspris som inkluderer alle avtalte tjenester, inkludert årsoppgjør og periodiske oppgaver. Månedsprisen gir forutsigbare kostnader gjennom hele året.</li><li>Avtalt månedspris faktureres etter avtale og dekker alle løpende og periodiske tjenester som beskrevet i tilbudet.</li><li>Engangstjenester faktureres separat ved utførelse.</li><li>Prisene forutsetter at bilag leveres digitalt og i ordnet stand, innenfor avtalt frist.</li><li>Tilbudet er basert på oppgitt volum og kompleksitet. Dersom antall bilag, fakturaer eller ansatte endres med mer enn 20 % fra tilbudsgrunnlaget, vil prisen justeres tilsvarende.</li><li>Prisene revideres hver 6. måned basert på faktisk volum. Dersom volumet avviker fra tilbudsgrunnlaget, justeres månedsprisen fra påfølgende måned. Prisjustering varsles skriftlig med minimum 1 måneds varsel.</li><li>Årlig prisregulering iht. KPI kan forekomme, minimum 1. januar hvert år.</li><li>Oppsigelsestid er 3 måneder fra utgangen av en kalendermåned.</li><li>Oppdragsavtale iht. regnskapsførerloven signeres ved oppstart.</li></ul><p id="tbEkstra" style="margin-top:.4rem;font-size:.8rem;color:#555;display:none"></p></div>
+<div class="tb-vilkaar"><h4>Forbehold og vilkår</h4><ul><li>Alle priser er oppgitt eks. mva.</li><li>Tilbudet er basert på en fast månedspris som inkluderer alle avtalte tjenester, inkludert årsoppgjør og periodiske oppgaver. Månedsprisen gir forutsigbare kostnader gjennom hele året.</li><li>Avtalt månedspris faktureres etter avtale og dekker alle løpende og periodiske tjenester som beskrevet i tilbudet.</li><li>Engangstjenester faktureres separat ved utførelse.</li><li>Prisene forutsetter at bilag leveres digitalt og i ordnet stand, innenfor avtalt frist.</li><li>Tilbudet er basert på oppgitt volum og kompleksitet. Dersom antall bilag, fakturaer eller ansatte endres med mer enn 20 % fra tilbudsgrunnlaget, vil prisen justeres tilsvarende.</li><li>Prisene revideres hver 6. måned basert på faktisk volum. Dersom volumet avviker fra tilbudsgrunnlaget, justeres månedsprisen fra påfølgende måned. Prisjustering varsles skriftlig med minimum 1 måneds varsel.</li><li>Årlig prisregulering iht. KPI kan forekomme, minimum 1. januar hvert år.</li><li>Oppsigelsestid er 3 måneder fra utgangen av en kalendermåned.</li><li>Oppdragsavtale iht. regnskapsførerloven signeres ved oppstart.</li></ul><p id="tbEkstra" style="margin-top:.4rem;font-size:.8rem;color:var(--ink-soft);display:none"></p></div>
 <div class="tb-sig"><div><h5 id="tbSigSelskapLabel"></h5><div class="sig-line"></div><div class="sig-name" id="tbSigEOO">Sted / Dato</div></div><div><h5>For <span id="tbSigKunde">Kunde</span></h5><div class="sig-line"></div><div class="sig-name">Sted / Dato</div></div></div>
 </div></div></div>
 
@@ -814,20 +843,22 @@ function computePriceDiffs(){
   });
   return diffs;
 }
-function applyUrlOverrides(){
+function urlPrisDiffs(){
   try{
-    var params=new URLSearchParams(window.location.search);
-    var p=params.get('p');
-    if(!p)return;
-    var diffs=JSON.parse(fromBase64Url(p));
-    Object.keys(diffs).forEach(function(b){
-      if(!BYRAA_DEFAULTS[b])return;
-      var overrides=diffs[b];
-      Object.keys(overrides).forEach(function(k){
-        BYRAA_DEFAULTS[b][k]=overrides[k];
-      });
+    var p=new URLSearchParams(window.location.search).get('p');
+    return p?JSON.parse(fromBase64Url(p)):null;
+  }catch(e){console.warn('Kunne ikke lese prisdata fra URL:',e);return null}
+}
+function applyUrlOverrides(){
+  var diffs=urlPrisDiffs();
+  if(!diffs)return;
+  Object.keys(diffs).forEach(function(b){
+    if(!BYRAA_DEFAULTS[b])return;
+    var overrides=diffs[b];
+    Object.keys(overrides).forEach(function(k){
+      BYRAA_DEFAULTS[b][k]=overrides[k];
     });
-  }catch(e){console.warn('Kunne ikke lese prisdata fra URL:',e)}
+  });
 }
 function updateUrlFromPrices(){
   try{
@@ -866,6 +897,66 @@ function fallbackCopy(url,btn){
   document.body.removeChild(ta);
 }
 // === SLUTT URL-BASERT PRISLAGRING ===
+
+// === VARIG PRISLAGRING (samme lager som tilbudene) ===
+// Electron: priser.json i datamappen · Nettleser med lagringsmappe: priser.json i mappen
+// · Ellers: localStorage. Lagres ved hver endring i prisinnstillingene.
+var PRISER_FIL='priser.json';
+var PRISER_LS_KEY='priskalkulator_priser';
+async function lastLagredePriser(){
+  try{
+    if(_isElectron&&window.electronStore.getPriser){
+      var d=await window.electronStore.getPriser();
+      return d&&d.byraa?d.byraa:null;
+    }
+    if(_useFileSystem&&_fsRoot){
+      try{
+        var fh=await _fsRoot.getFileHandle(PRISER_FIL);
+        var f=await fh.getFile();
+        var d2=JSON.parse(await f.text());
+        return d2&&d2.byraa?d2.byraa:null;
+      }catch(e){return null}
+    }
+    var raw=localStorage.getItem(PRISER_LS_KEY);
+    var d3=raw?JSON.parse(raw):null;
+    return d3&&d3.byraa?d3.byraa:null;
+  }catch(e){console.warn('Kunne ikke lese lagrede priser:',e);return null}
+}
+async function lagrePriser(){
+  var pakke={_version:1,_lagret:new Date().toISOString(),byraa:BYRAA_PRISER};
+  try{
+    if(_isElectron&&window.electronStore.savePriser){await window.electronStore.savePriser(pakke);return}
+    if(_useFileSystem&&_fsRoot){await fsWriteFile(_fsRoot,PRISER_FIL,JSON.stringify(pakke,null,2));return}
+    localStorage.setItem(PRISER_LS_KEY,JSON.stringify(pakke));
+  }catch(e){console.warn('Kunne ikke lagre priser:',e)}
+}
+// Fletter inn priser pr byrå. Kopierer kun kjente nøkler, slik at en gammel eller
+// manipulert fil ikke kan introdusere ukjente felter.
+function flettInnPriser(kilde){
+  if(!kilde)return false;
+  var endret=false;
+  Object.keys(kilde).forEach(function(b){
+    if(!BYRAA_PRISER[b])return;
+    var p=kilde[b];
+    if(!p||typeof p!=='object')return;
+    Object.keys(DEFAULTS).forEach(function(k){
+      if(p[k]!==undefined){BYRAA_PRISER[b][k]=p[k];endret=true}
+    });
+  });
+  return endret;
+}
+// Kalles når lagringslaget er klart. Lagrede priser er grunnlaget, en delt lenke
+// (?p=) overstyrer dem for denne økten uten å overskrive det som ligger lagret.
+async function lastOgBrukPriser(){
+  var lagret=await lastLagredePriser();
+  if(!lagret)return false;
+  flettInnPriser(lagret);
+  flettInnPriser(urlPrisDiffs());
+  loadByraaPriser($('selskapSelect').value);
+  recalc();
+  return true;
+}
+// === SLUTT VARIG PRISLAGRING ===
 
 // Aktive priser per byrå (lagrer endringer gjort i innstillingspanelet)
 const BYRAA_PRISER={};
@@ -1000,7 +1091,7 @@ function renderInternTidTrinn(trinn){
     row.innerHTML='<div style="display:flex;align-items:center;gap:.2rem"><label style="font-size:.75rem;white-space:nowrap">Fra</label><input type="number" class="itt-fra" value="'+t.fra+'" min="0" style="width:60px" onchange="applySettings()"></div>'
       +'<div style="display:flex;align-items:center;gap:.2rem"><label style="font-size:.75rem;white-space:nowrap">Til</label><input type="number" class="itt-til" value="'+t.til+'" min="0" style="width:60px" onchange="applySettings()"></div>'
       +'<div style="display:flex;align-items:center;gap:.2rem"><label style="font-size:.75rem;white-space:nowrap">Timer</label><input type="number" class="itt-timer" value="'+t.timer+'" min="0" step="0.25" style="width:60px" onchange="applySettings()"></div>'
-      +'<button onclick="this.parentElement.remove();applySettings()" style="background:none;border:none;color:#c44;cursor:pointer;font-size:1.1rem;padding:0 .2rem" title="Fjern trinn">&times;</button>';
+      +'<button onclick="this.parentElement.remove();applySettings()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:1.1rem;padding:0 .2rem" title="Fjern trinn">&times;</button>';
     c.appendChild(row);
   });
 }
@@ -1046,7 +1137,7 @@ function applySettings(){
   // Lagre endringer for valgt byrå
   const byraa=$('selskapSelect').value;
   BYRAA_PRISER[byraa]=Object.assign({},P);
-  updateLabels();recalc();updateUrlFromPrices();
+  updateLabels();recalc();updateUrlFromPrices();lagrePriser();
 }
 function updateLabels(){
   $('timeprisRegnskap').value=P.timeprisRegnskap;
@@ -1078,7 +1169,7 @@ function updateLabels(){
 }
 function resetSettings(){const byraa=$('selskapSelect').value;const defs=BYRAA_DEFAULTS[byraa]||DEFAULTS;for(const k in defs){const el=$('set_'+k);if(el)el.value=defs[k]}applySettings()}
 function openSettings(){const navn=SELSKAPER[$('selskapSelect').value]||'Egendefinert';$('settingsTitle').textContent='⚙ Prisinnstillinger – '+navn;$('settingsByraaLabel').textContent=navn;$('settingsPanel').classList.add('active');document.body.style.overflow='hidden'}
-function copyPricesToAll(){const byraa=$('selskapSelect').value;const src=Object.assign({},P);Object.keys(BYRAA_PRISER).forEach(function(k){if(k!==byraa)BYRAA_PRISER[k]=Object.assign({},src)});alert('Prisene fra '+SELSKAPER[byraa]+' er kopiert til alle andre byråer.');updateUrlFromPrices()}
+function copyPricesToAll(){const byraa=$('selskapSelect').value;const src=Object.assign({},P);Object.keys(BYRAA_PRISER).forEach(function(k){if(k!==byraa)BYRAA_PRISER[k]=Object.assign({},src)});alert('Prisene fra '+SELSKAPER[byraa]+' er kopiert til alle andre byråer.');updateUrlFromPrices();lagrePriser()}
 function saveNewVersion(){
   // Sørg for at nåværende byrå er lagret
   applySettings();
@@ -1193,6 +1284,7 @@ function applyJustering(){
   renderPrishistorikk();
   checkJusteringWarning();
   updateUrlFromPrices();
+  lagrePriser();
 }
 
 function renderPrishistorikk(){
@@ -1328,6 +1420,9 @@ async function velgLagringsmappe(){
     document.getElementById('fsSetupScreen').style.display='none';
     // Last inn fra fil og initialiser
     await fsLoadAllToCache();
+    // Priser: bruk mappens priser hvis de finnes, ellers flytt med det som lå i nettleseren
+    var harPriser=await lastOgBrukPriser();
+    if(!harPriser)await lagrePriser();
     autoBackupFs();
     // Vis filsystem-backup-info
     var bs=$('koBackupSection');if(bs)bs.style.display='none';
@@ -1606,8 +1701,8 @@ function renderKundeOversikt(){
   h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;padding:1rem 1.2rem;border-bottom:1px solid var(--border)">';
   h+='<div style="background:var(--accent-light);border-radius:10px;padding:.8rem 1rem;text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--accent-dark)">'+totalKunder+'</div><div style="font-size:.75rem;color:var(--muted)">Kunder</div></div>';
   h+='<div style="background:var(--accent-light);border-radius:10px;padding:.8rem 1rem;text-align:center"><div style="font-size:1.1rem;font-weight:700;color:var(--accent-dark)">'+fmt(totalMnd)+'</div><div style="font-size:.75rem;color:var(--muted)">kr/mnd totalt</div></div>';
-  h+='<div style="background:#e8f5e9;border-radius:10px;padding:.8rem 1rem;text-align:center"><div style="font-size:1.5rem;font-weight:700;color:#2a7000">'+generert+'</div><div style="font-size:.75rem;color:var(--muted)">Tilbud generert</div></div>';
-  h+='<div style="background:#fff8e1;border-radius:10px;padding:.8rem 1rem;text-align:center"><div style="font-size:1.5rem;font-weight:700;color:#e8a735">'+underArbeid+'</div><div style="font-size:.75rem;color:var(--muted)">Under arbeid</div></div>';
+  h+='<div style="background:var(--ok-bg);border-radius:10px;padding:.8rem 1rem;text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--ok)">'+generert+'</div><div style="font-size:.75rem;color:var(--muted)">Tilbud generert</div></div>';
+  h+='<div style="background:var(--warn-bg);border-radius:10px;padding:.8rem 1rem;text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--warn-ink)">'+underArbeid+'</div><div style="font-size:.75rem;color:var(--muted)">Under arbeid</div></div>';
   h+='</div>';
 
   if(kundeKeys.length===0&&!search){
@@ -1625,12 +1720,12 @@ function renderKundeOversikt(){
     var g=grupper[k];
     var siste=g.tilbud[0];
     var antall=g.tilbud.length;
-    var statusColor=siste.tilbudGenerert?'#2a7000':'#e8a735';
+    var statusColor=siste.tilbudGenerert?'var(--ok)':'var(--warn-ink)';
     var statusText=siste.tilbudGenerert?'Tilbud generert':'Under arbeid';
-    var statusBg=siste.tilbudGenerert?'#e8f5e9':'#fff8e1';
+    var statusBg=siste.tilbudGenerert?'var(--ok-bg)':'var(--warn-bg)';
     var cardId='kunde_'+k.replace(/[^a-zA-Z0-9]/g,'_');
 
-    h+='<div style="background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:box-shadow .2s" onmouseover="this.style.boxShadow=\'0 4px 12px rgba(0,0,0,.1)\'" onmouseout="this.style.boxShadow=\'none\'">';
+    h+='<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:box-shadow .2s" onmouseover="this.style.boxShadow=\'0 4px 12px rgba(0,0,0,.1)\'" onmouseout="this.style.boxShadow=\'none\'">';
 
     // Sjekk om kunden har importerte tilbud
     var harImportert=g.tilbud.some(function(t){return t.kildeImport});
@@ -1639,12 +1734,12 @@ function renderKundeOversikt(){
     h+='<div style="padding:1rem;cursor:pointer'+(harImportert?';border-left:3px solid #3b82f6':'')+'" onclick="var el=document.getElementById(\''+cardId+'\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'">';
     h+='<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.4rem;gap:.4rem">';
     h+='<div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap"><strong style="font-size:.95rem;color:var(--text)">'+escHtml(g.navn||'Uten navn')+'</strong>';
-    if(harImportert)h+='<span style="font-size:.65rem;background:#dbeafe;color:#1e40af;padding:.1rem .4rem;border-radius:4px;font-weight:600">📥 Importert</span>';
+    if(harImportert)h+='<span style="font-size:.65rem;background:var(--info-bg);color:var(--info);padding:.1rem .4rem;border-radius:4px;font-weight:600">📥 Importert</span>';
     h+='</div>';
     h+='<span style="font-size:.72rem;background:var(--accent-light);color:var(--accent-dark);padding:.15rem .4rem;border-radius:4px;font-weight:600;white-space:nowrap">'+antall+' tilbud</span>';
     h+='</div>';
     h+='<div style="font-size:.78rem;color:var(--muted);margin-bottom:.5rem">'+(g.org||'Ingen org.nr')+'</div>';
-    h+='<div style="font-size:1.15rem;font-weight:700;color:var(--accent-dark);margin-bottom:.4rem">'+(siste.mndPris>0?fmt(siste.mndPris)+' kr/mnd':'<span style="font-size:.85rem;color:#999;font-weight:400">Mangler pris — åpne for å beregne</span>')+'</div>';
+    h+='<div style="font-size:1.15rem;font-weight:700;color:var(--accent-dark);margin-bottom:.4rem">'+(siste.mndPris>0?fmt(siste.mndPris)+' kr/mnd':'<span style="font-size:.85rem;color:var(--muted);font-weight:400">Mangler pris — åpne for å beregne</span>')+'</div>';
     h+='<div style="display:flex;justify-content:space-between;align-items:center">';
     h+='<span style="font-size:.72rem;padding:.2rem .5rem;border-radius:4px;background:'+statusBg+';color:'+statusColor+';font-weight:600">'+statusText+'</span>';
     h+='<span style="font-size:.72rem;color:var(--muted)">Sist: '+(siste.dato||'–')+'</span>';
@@ -1652,9 +1747,9 @@ function renderKundeOversikt(){
     h+='</div>';
 
     // Tilbudsliste (ekspanderbar)
-    h+='<div id="'+cardId+'" style="display:none;border-top:1px solid var(--border);background:#fafcf6">';
+    h+='<div id="'+cardId+'" style="display:none;border-top:1px solid var(--border);background:var(--soft)">';
     g.tilbud.forEach(function(t){
-      var tStatus=t.tilbudGenerert?'<span style="color:#2a7000;font-size:.72rem">Generert</span>':'<span style="color:#e8a735;font-size:.72rem">Under arbeid</span>';
+      var tStatus=t.tilbudGenerert?'<span style="color:var(--ok);font-size:.72rem">Generert</span>':'<span style="color:var(--warn-ink);font-size:.72rem">Under arbeid</span>';
       h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;border-bottom:1px solid rgba(0,0,0,.05);font-size:.85rem">';
       h+='<div style="display:flex;align-items:center;gap:.8rem">';
       h+='<span style="color:var(--muted);min-width:80px">'+(t.dato||'–')+'</span>';
@@ -1668,7 +1763,7 @@ function renderKundeOversikt(){
       }else{
         h+='<button style="font-size:.72rem;padding:.2rem .5rem;background:#4a7000;color:#fff;border:none;border-radius:4px;cursor:pointer" onclick="event.stopPropagation();loadTilbudFromDb(\''+t.id+'\');closeKundeOversikt()">Fortsett</button>';
       }
-      h+='<button style="background:none;border:none;color:#c44;cursor:pointer;font-size:.85rem;padding:0 .2rem" onclick="event.stopPropagation();deleteTilbudFromDb(\''+t.id+'\',\''+escHtml(t.navn||'')+'\');renderKundeOversikt()" title="Slett">&times;</button>';
+      h+='<button style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:.85rem;padding:0 .2rem" onclick="event.stopPropagation();deleteTilbudFromDb(\''+t.id+'\',\''+escHtml(t.navn||'')+'\');renderKundeOversikt()" title="Slett">&times;</button>';
       h+='</div>';
       h+='</div>';
     });
@@ -1692,12 +1787,12 @@ function updateBackupInfo(){
       var dagerSiden=Math.floor((Date.now()-bd.getTime())/(1000*60*60*24));
       var datoStr=bd.toLocaleDateString('nb-NO');
       if(dagerSiden>=30){
-        bInfo.innerHTML='<span style="color:#c44;font-weight:600">Siste backup: '+datoStr+' ('+dagerSiden+' dager siden) — Ta backup nå!</span>';
+        bInfo.innerHTML='<span style="color:var(--danger);font-weight:600">Siste backup: '+datoStr+' ('+dagerSiden+' dager siden) — Ta backup nå!</span>';
       }else{
         bInfo.innerHTML='Siste backup: '+datoStr;
       }
     }else{
-      bInfo.innerHTML='<span style="color:#c44;font-weight:600">Ingen backup tatt — Ta backup nå!</span>';
+      bInfo.innerHTML='<span style="color:var(--danger);font-weight:600">Ingen backup tatt — Ta backup nå!</span>';
     }
   }
   if(_isElectron){
@@ -1748,10 +1843,15 @@ function renderDatabase(){
   }
   // Meta-info
   var allIdx=getDbIndex();
-  var totalSize=0;
-  try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k.indexOf(DB_PREFIX)===0||k===DB_INDEX_KEY){totalSize+=localStorage.getItem(k).length*2}}}catch(e){}
-  var sizeStr=totalSize>1024*1024?(totalSize/1024/1024).toFixed(1)+' MB':(totalSize/1024).toFixed(0)+' KB';
-  $('dbMeta').textContent=allIdx.length+' tilbud lagret · '+sizeStr+' brukt';
+  var metaTxt=allIdx.length+' tilbud lagret';
+  if(_isElectron){metaTxt+=' · lagres som filer'}
+  else if(_useFileSystem){metaTxt+=' · lagres i lagringsmappen'}
+  else{
+    var totalSize=0;
+    try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k.indexOf(DB_PREFIX)===0||k===DB_INDEX_KEY){totalSize+=localStorage.getItem(k).length*2}}}catch(e){}
+    metaTxt+=' · '+(totalSize>1024*1024?(totalSize/1024/1024).toFixed(1)+' MB':(totalSize/1024).toFixed(0)+' KB')+' brukt';
+  }
+  $('dbMeta').textContent=metaTxt;
 }
 
 function exportDatabase(){
@@ -2027,14 +2127,36 @@ function importDatabase(file){
   };
   reader.readAsText(file);
 }
+// === FELLES LESING/SKRIVING AV TILBUD (Electron / filsystem / localStorage) ===
+async function getTilbudById(id){
+  if(_isElectron){
+    var d=_dbCache.tilbud[id];
+    if(!d){d=await window.electronStore.getTilbud(id);if(d)_dbCache.tilbud[id]=d}
+    return d||null;
+  }
+  if(_useFileSystem)return _dbCache.tilbud[id]||null;
+  try{var raw=localStorage.getItem(DB_PREFIX+id);return raw?JSON.parse(raw):null}catch(e){return null}
+}
+async function getAlleTilbud(idx){
+  var out=[];
+  for(var i=0;i<idx.length;i++){
+    var d=await getTilbudById(idx[i].id);
+    if(d){d._indexEntry=idx[i];out.push(d)}
+  }
+  return out;
+}
+async function lagreTilbudData(id,data){
+  if(_isElectron){_dbCache.tilbud[id]=data;await window.electronStore.saveTilbud(id,data);return}
+  if(_useFileSystem){_dbCache.tilbud[id]=data;await fsWriteFile(_fsTilbudDir,id+'.json',JSON.stringify(data,null,2));return}
+  localStorage.setItem(DB_PREFIX+id,JSON.stringify(data));
+}
 // === SLUTT TILBUDSDATABASE ===
 
 // === PRISSAMMENLIGNING ===
-function openComparison(id){
+async function openComparison(id){
   try{
-    var raw=localStorage.getItem(DB_PREFIX+id);
-    if(!raw){alert('Tilbudet ble ikke funnet.');return}
-    var data=JSON.parse(raw);
+    var data=await getTilbudById(id);
+    if(!data){alert('Tilbudet ble ikke funnet.');return}
     // 1. Hent gamle beregninger
     var old=data._beregnetDetalj||null;
     var oldTot=data.beregnet||{};
@@ -2043,7 +2165,7 @@ function openComparison(id){
     // 2. Last inn volumer/tjenester og beregn med DAGENS priser
     loadFromJSON(data);
     // Etter loadFromJSON → recalc() har kjørt med dagens priser → S har nye verdier
-    var nw={bilagPris:S.bilagPris,internTidPris:S.internTidPris,fakturaPris:S.fakturaPris,mvaPris:S.mvaPris,omvendtMvaPris:S.omvendtMvaPris,prosjPris:S.prosjPris,purringPris:S.purringPris,lonnBasis:S.lonnBasis,lr:S.lr,sammenstillingMnd:S.sammenstillingMnd,ek:S.ek,aarsAarlig:S.aarsAarlig,aarsMnd:Math.ceil((S.aarsAarlig||0)/12/10)*10,kvalMnd:S.kvalMnd,rv:S.rv,sv:S.sv,mndTot:S.mndTot,eTot:S.eTot,eO:S.eO,eP:S.eP,eS:S.eS,eA:S.eA};
+    var nw={bilagPris:S.bilagPris,internTidPris:S.internTidPris,kursInterntidPris:S.kursInterntidPris,fakturaPris:S.fakturaPris,mvaPris:S.mvaPris,omvendtMvaPris:S.omvendtMvaPris,prosjPris:S.prosjPris,purringPris:S.purringPris,lonnBasis:S.lonnBasis,lr:S.lr,sammenstillingMnd:S.sammenstillingMnd,ek:S.ek,aarsAarlig:S.aarsAarlig,aarsMnd:Math.ceil((S.aarsAarlig||0)/12/10)*10,kvalMnd:S.kvalMnd,rv:S.rv,sv:S.sv,mndTot:S.mndTot,eTot:S.eTot,eO:S.eO,eP:S.eP,eS:S.eS,eA:S.eA};
     // 3. Bygg sammenligning
     renderComparison(old,nw,oldTot,oldDato,kundeNavn);
     closeDatabase();
@@ -2054,17 +2176,15 @@ function openComparison(id){
 
 function closeComparison(){$('cmpModal').classList.remove('active');document.body.style.overflow=''}
 
-function openDashboard(){renderDashboard();$('dashModal').classList.add('active');document.body.style.overflow='hidden'}
+function openDashboard(){$('dashBody').innerHTML='<div class="dash-empty">Laster…</div>';$('dashModal').classList.add('active');document.body.style.overflow='hidden';renderDashboard()}
 function closeDashboard(){$('dashModal').classList.remove('active');document.body.style.overflow=''}
 
-function renderDashboard(){
+async function renderDashboard(){
   var idx=getDbIndex();
   if(idx.length===0){$('dashBody').innerHTML='<div class="dash-empty">Ingen lagrede tilbud enda. Lagre tilbud for å se dashboard.</div>';return}
   // Load full data for each tilbud
-  var tilbud=[];
-  for(var i=0;i<idx.length;i++){
-    try{var raw=localStorage.getItem(DB_PREFIX+idx[i].id);if(raw){var d=JSON.parse(raw);d._indexEntry=idx[i];tilbud.push(d)}}catch(e){}
-  }
+  var tilbud=await getAlleTilbud(idx);
+  if(tilbud.length===0){$('dashBody').innerHTML='<div class="dash-empty">Fant ingen tilbudsdata å vise.</div>';return}
   // KPI
   var antall=tilbud.length;
   var sumMnd=0;
@@ -2166,7 +2286,7 @@ function renderDashboard(){
   }
   h+='<div class="dash-section"><h3>Halvårlig prisrevisjon</h3>';
   if(revisjonKunder.length>0){
-    h+='<div class="dash-alert" style="background:#fff3e0;border-color:#f5c16c;margin-bottom:.8rem"><div class="dash-alert-title">'+revisjonKunder.length+' kunde'+(revisjonKunder.length>1?'r':'')+' trenger prisgjennomgang</div></div>';
+    h+='<div class="dash-alert" style="background:var(--warn-bg);border-color:#f5c16c;margin-bottom:.8rem"><div class="dash-alert-title">'+revisjonKunder.length+' kunde'+(revisjonKunder.length>1?'r':'')+' trenger prisgjennomgang</div></div>';
     h+='<table class="dash-table"><thead><tr><th>Kunde</th><th>Byrå</th><th>Mnd.pris</th><th>Sist revidert</th><th></th></tr></thead><tbody>';
     for(var i=0;i<revisjonKunder.length;i++){
       var k=revisjonKunder[i];
@@ -2181,15 +2301,14 @@ function renderDashboard(){
   $('dashBody').innerHTML=h;
 }
 
-function godkjennRevisjon(id){
+async function godkjennRevisjon(id){
   try{
-    var raw=localStorage.getItem(DB_PREFIX+id);
-    if(!raw)return;
-    var data=JSON.parse(raw);
+    var data=await getTilbudById(id);
+    if(!data)return;
     data._sisteRevisjon=new Date().toISOString().slice(0,10);
-    localStorage.setItem(DB_PREFIX+id,JSON.stringify(data));
+    await lagreTilbudData(id,data);
     renderDashboard();
-  }catch(e){}
+  }catch(e){console.warn('Kunne ikke godkjenne revisjon:',e)}
 }
 
 function renderComparison(old,nw,oldTot,oldDato,kundeNavn){
@@ -2198,6 +2317,8 @@ function renderComparison(old,nw,oldTot,oldDato,kundeNavn){
     {section:'Regnskap'},
     {label:'Bilagsbehandling',key:'bilagPris'},
     {label:'Fakturering',key:'fakturaPris'},
+    {label:'Interntid',key:'internTidPris'},
+    {label:'Kurs og avtalt interntid',key:'kursInterntidPris'},
     {label:'MVA',key:'mvaPris'},
     {label:'Omvendt MVA',key:'omvendtMvaPris'},
     {label:'Prosjektregnskap',key:'prosjPris'},
@@ -2259,13 +2380,14 @@ function recalc(){
   var bilagStkPris=Math.round(minPr*timepris/60*100)/100;
   const internTidTimer=getInternTid(bilag);
   const internTidPris=bilag>0?Math.ceil(internTidTimer*timepris/10)*10:0;
-  // Kurs og avtalt interntid: timepris \u00d7 timer (alltid synlig i kalkulator, ikke i tilbud)
+  // Kurs og avtalt interntid: timepris \u00d7 timer. Bakes inn i m\u00e5nedsprisen, men vises
+  // aldri som egen post i tilbudet \u2013 kun som intern linje i kalkulatoren.
   const kursTimepris=P.kursTimepris||2500,kursTimer=P.kursTimer||1.5;
   const kursInterntidPris=Math.round(kursTimepris*kursTimer);
   if(bilag>0){$('bilagCalcBox').style.display='block';$('bilagCalcDetail').innerHTML=bilag+' bilag \u00d7 '+minPr+' min = '+bilagTimer.toFixed(1)+' timer \u00d7 '+fmt(timepris)+' kr/t<br>Stk.pris pr bilag: <strong>'+bilagStkPris.toFixed(2)+' kr</strong>';$('bilagCalcResult').textContent=fmt(bilagPris)+' kr/mnd'}else{$('bilagCalcBox').style.display='none'}
   if(bilag>0&&internTidTimer>0){$('internTidCalcBox').style.display='block';$('internTidCalcDetail').innerHTML='Interntid: '+bilag+' bilag \u2192 '+internTidTimer.toFixed(2)+' t \u00d7 '+fmt(timepris)+' kr/t';$('internTidCalcResult').textContent=fmt(internTidPris)+' kr/mnd'}else{$('internTidCalcBox').style.display='none'}
   // Egen post for kurs og avtalt interntid (alltid synlig, intern)
-  if($('kursInterntidBox')){$('kursInterntidBox').style.display='block';$('kursInterntidDetail').innerHTML='Kurs og avtalt interntid: '+fmt(kursTimepris)+' kr/t \u00d7 '+kursTimer+' t';$('kursInterntidResult').innerHTML=fmt(kursInterntidPris)+' kr/mnd <span style="font-size:.7rem;color:#888;font-weight:400">(intern \u2013 ikke i tilbud)</span>'}
+  if($('kursInterntidBox')){$('kursInterntidBox').style.display='block';$('kursInterntidDetail').innerHTML='Kurs og avtalt interntid: '+fmt(kursTimepris)+' kr/t \u00d7 '+kursTimer+' t';$('kursInterntidResult').innerHTML=fmt(kursInterntidPris)+' kr/mnd <span style="font-size:.7rem;color:var(--muted);font-weight:400">(intern \u2013 bakt inn i m\u00e5nedsprisen, egen post kun her)</span>'}
   const fakturaAnt=num('fakturaMnd'),minPrFaktura=num('minPrFaktura'),timeprisFakt=P.timeprisFaktura;
   const fakturaTimer=fakturaAnt*minPrFaktura/60,fakturaPris=Math.ceil(fakturaTimer*timeprisFakt/10)*10;
   var fakturaStkPris=Math.round(minPrFaktura*timeprisFakt/60*100)/100;
@@ -2277,8 +2399,8 @@ function recalc(){
   const prosjPris=sp?num('prosjektAnt')*P.prosjektEnhet:0;
   // Purring kan velges fritt uavhengig av antall fakturaer
   const purringPris=chk('purring')?Math.ceil(P.purring/12/10)*10:0;
-  const regTot=bilagPris+fakturaPris+internTidPris+mvaPris+omvendtMvaPris+prosjPris+purringPris;
-  setLine('line-bilag',bilagPris);setLine('line-faktura',fakturaPris);setLine('line-interntid',internTidPris);setLine('line-mva',mvaPris);setLine('line-omvendtMva',omvendtMvaPris);setLine('line-prosjekt',prosjPris);setLine('line-purring',purringPris);
+  const regTot=bilagPris+fakturaPris+internTidPris+kursInterntidPris+mvaPris+omvendtMvaPris+prosjPris+purringPris;
+  setLine('line-bilag',bilagPris);setLine('line-faktura',fakturaPris);setLine('line-interntid',internTidPris);setLine('line-kursInterntid',kursInterntidPris);setLine('line-mva',mvaPris);setLine('line-omvendtMva',omvendtMvaPris);setLine('line-prosjekt',prosjPris);setLine('line-purring',purringPris);
   $('badge-regnskap').textContent=fmt(regTot)+' kr/mnd';
 
   // Lønn - tidsbasert fra Excel-tabell
@@ -2335,6 +2457,7 @@ function recalc(){
   $('line-engangTotal').querySelector('.val').textContent=eTot>0?fmt(eTot)+' kr':'\u2013';
   $('onetimeSection').style.display=eTot>0?'block':'none';$('badge-engang').textContent=fmt(eTot)+' kr';
 
+  // regTot inneholder kurs og avtalt interntid – bakt inn, men aldri egen post i tilbudet
   const mndTot=regTot+lonnTot+aarsMnd+kvTot;
   $('totalMnd').textContent=fmt(mndTot)+' kr';$('totalAar').textContent=fmt(mndTot*12)+' kr';
 
@@ -2353,7 +2476,8 @@ function recalc(){
   const fakturaKost=fakturaTimer*P.internKost;
   const lonnKost=(lonnKjoringMnd+lonnAvstMnd)*P.internKost;
   const raadgivKost=(raadgivTimerAar+seniorTimerAar)/12*P.internKost;
-  const kost=bilagKost+internTidKost+fakturaKost+lonnKost+raadgivKost+P.overhead;
+  const kursInterntidKost=kursTimer*P.internKost;
+  const kost=bilagKost+internTidKost+fakturaKost+lonnKost+raadgivKost+kursInterntidKost+P.overhead;
   const db=mndTot-kost,dg=mndTot>0?(db/mndTot*100):0;
   $('dgPct').textContent=dg.toFixed(1)+' %';$('dgKr').textContent='DB: '+fmt(db)+' kr/mnd';
   const bar=$('dgBar');bar.style.width=Math.max(0,Math.min(100,dg))+'%';bar.style.background=dg>=50?'#90D000':dg>=30?'#e8a735':'#c44';
@@ -2417,18 +2541,24 @@ function renderTilbud(){
 
   // Build price table
   var h='';
-  var regTot=S.bilagPris+S.fakturaPris+S.internTidPris+S.mvaPris+S.omvendtMvaPris+S.prosjPris;
+  var regTot=(S.bilagPris||0)+(S.fakturaPris||0)+(S.internTidPris||0)+(S.mvaPris||0)+(S.omvendtMvaPris||0)+(S.prosjPris||0)+(S.purringPris||0);
   var lonnTot=S.lonnBasis+S.lr+S.sammenstillingMnd+S.ek;
-  var harRegnskap=(S.bilagPris||0)>0;
+  var aarsMndTot=(S.aarsAarlig||0)>0?Math.ceil(S.aarsAarlig/12/10)*10:0;
+  var raadMnd=(S.rv||0)+(S.sv||0);
+  // Restbel\u00f8pet etter \u00e5rsoppgj\u00f8r og r\u00e5dgivning. Inneholder regnskap, l\u00f8nn, kvalitetsarbeid
+  // og kurs/avtalt interntid \u2013 sistnevnte skal ikke vises som egen post for kunden.
+  // Beregnes som rest av S.mndTot slik at postene alltid summerer til totalen.
+  var avtaltTot=S.mndTot-aarsMndTot-raadMnd;
+  var harRegnskap=regTot>0;
   var harLonn=lonnTot>0;
   var harKval=(S.kvalMnd||0)>0;
-  if(harRegnskap||harLonn||harKval){
+  if(avtaltTot>0){
     var deler=[];
     if(harRegnskap)deler.push('Regnskapstjenester');
     if(harLonn)deler.push('L\u00f8nnsadministrasjon');
     if(harKval)deler.push('Lovp\u00e5lagt kvalitetsarbeid');
+    if(deler.length===0)deler.push('Regnskapstjenester');
     var avtaltBesk=deler.join('. ')+'.';
-    var avtaltTot=(harRegnskap?regTot:0)+(harLonn?lonnTot:0)+(harKval?S.kvalMnd:0);
     h+='<tr><td>Avtalt tjenesteleveranse<br><small style="color:var(--muted);font-weight:400">'+avtaltBesk+'</small></td><td>'+fmt(avtaltTot)+' kr/mnd</td></tr>';
   }
   if(S.aarsAarlig>0){
@@ -2442,17 +2572,15 @@ function renderTilbud(){
     if(chk('periodiskRapp'))aarsDeler.push('periodisk rapportering');
     var aarsBesk=aarsDeler.length>0?aarsDeler.join(', '):'\u00e5rsregnskap';
     aarsBesk=aarsBesk.charAt(0).toUpperCase()+aarsBesk.slice(1);
-    var aarsMnd=Math.ceil(S.aarsAarlig/12/10)*10;
-    h+='<tr><td>\u00c5rsoppgj\u00f8r<br><small style="color:var(--muted);font-weight:400">'+aarsBesk+'</small></td><td>'+fmt(aarsMnd)+' kr/mnd</td></tr>';
+    h+='<tr><td>\u00c5rsoppgj\u00f8r<br><small style="color:var(--muted);font-weight:400">'+aarsBesk+'</small></td><td>'+fmt(aarsMndTot)+' kr/mnd</td></tr>';
   }
   // Lovp\u00e5lagt kvalitetsarbeid er n\u00e5 inkludert i 'Avtalt tjenesteleveranse'
-  var raadMnd=(S.rv||0)+(S.sv||0);
   if(raadMnd>0)h+='<tr><td>R\u00e5dgivning<br><small style="color:var(--muted);font-weight:400">\u00d8konomisk r\u00e5dgivning og sparring</small></td><td>'+fmt(raadMnd)+' kr/mnd</td></tr>';
   $('tbBody').innerHTML=h;
 
   var fh='<tr><td>Sum l\u00f8pende pr m\u00e5ned</td><td>'+fmt(S.mndTot)+' kr/mnd</td></tr>';
   fh+='<tr><td>Estimert \u00e5rspris</td><td>'+fmt(S.mndTot*12)+' kr/\u00e5r</td></tr>';
-  if(S.harRabatt){fh+='<tr><td>Rabatt '+S.rabattPct+'% i '+S.rabattMnd+' mnd<br><small style="color:var(--muted);font-weight:400">Rabattert mndpris: '+fmt(S.rabattMndPris)+' kr/mnd</small></td><td style="color:#2a7000">\u2212'+fmt(S.rabattVerdi)+' kr</td></tr>';fh+='<tr><td>Effektiv \u00e5rspris f\u00f8rste \u00e5r</td><td>'+fmt(S.mndTot*12-S.rabattVerdi)+' kr/\u00e5r</td></tr>'}
+  if(S.harRabatt){fh+='<tr><td>Rabatt '+S.rabattPct+'% i '+S.rabattMnd+' mnd<br><small style="color:var(--muted);font-weight:400">Rabattert mndpris: '+fmt(S.rabattMndPris)+' kr/mnd</small></td><td style="color:var(--ok)">\u2212'+fmt(S.rabattVerdi)+' kr</td></tr>';fh+='<tr><td>Effektiv \u00e5rspris f\u00f8rste \u00e5r</td><td>'+fmt(S.mndTot*12-S.rabattVerdi)+' kr/\u00e5r</td></tr>'}
   $('tbFoot').innerHTML=fh;
 
   // Engang
@@ -2466,10 +2594,8 @@ function renderTilbud(){
 
   // "Hva inngår i våre tjenester" - kun basert på valgte tjenester
   var inngaar='';
-  var harRegnskap=(S.bilagPris||0)>0||(S.fakturaPris||0)>0||(S.mvaPris||0)>0||(S.omvendtMvaPris||0)>0||(S.prosjPris||0)>0;
   if(harRegnskap)inngaar+='<li><strong>Løpende regnskapsføring</strong> – bokføring, avstemming og rapportering iht. bokføringsloven og regnskapsloven</li>';
   if((S.aarsAarlig||0)>0)inngaar+='<li><strong>Årsoppgjør</strong> – utarbeidelse av årsregnskap og skattemelding iht. gjeldende lovverk</li>';
-  var harLonn=(S.lonnBasis||0)>0||(S.lr||0)>0||(S.sammenstillingMnd||0)>0||(S.ek||0)>0;
   if(harLonn)inngaar+='<li><strong>Lønnsadministrasjon</strong> – lønnskjøring, a-melding, sammenstillingsoppgaver og oppfølging av arbeidsgiveravgift og skattetrekk</li>';
   if((S.kvalMnd||0)>0)inngaar+='<li><strong>Lovpålagt kvalitetsarbeid</strong> – intern kvalitetskontroll pr kunde (GRFS kap. 7), vurdering av oppdragsgivers virksomhet og interne rutiner, oppfølging av hvitvaskingsregelverket, oppdragsavtale og løpende oppdragsdokumentasjon. Vi er underlagt ekstern kvalitetskontroll fra Regnskap Norge/Finanstilsynet.</li>';
   if(chk('periodiskRapp'))inngaar+='<li><strong>Rapportering</strong> – periodiske regnskapsrapporter med skriftlige kommentarer iht. GRFS</li>';
@@ -2564,7 +2690,7 @@ function _renderReadOnlyTilbudHtml(data){
     html+='<div class="total-bar"><span>Sum pr måned</span><span>'+f(mndTot)+' kr/mnd</span></div>';
 
     // Regnskap
-    var regTot=(d.bilagPris||0)+(d.fakturaPris||0)+(d.internTidPris||0)+(d.mvaPris||0)+(d.omvendtMvaPris||0)+(d.prosjPris||0)+(d.purringPris||0);
+    var regTot=(d.bilagPris||0)+(d.fakturaPris||0)+(d.internTidPris||0)+(d.mvaPris||0)+(d.omvendtMvaPris||0)+(d.prosjPris||0)+(d.purringPris||0)+(d.kursInterntidPris||0);
     html+='<div class="section"><div class="section-head"><span>Regnskap</span><span class="total">'+f(regTot)+' kr/mnd</span></div>';
     html+='<div class="row"><span class="label">Antall fakturaer / mnd</span><span class="val">'+(regn.fakturaMnd||0)+'</span></div>';
     html+='<div class="row"><span class="label">Minutter pr faktura</span><span class="val">'+(regn.minPrFaktura||0)+'</span></div>';
@@ -2577,6 +2703,7 @@ function _renderReadOnlyTilbudHtml(data){
     if(d.omvendtMvaPris>0)html+='<div class="row"><span class="label">Omvendt MVA</span><span class="val">'+f(d.omvendtMvaPris)+' kr/mnd</span></div>';
     if(d.prosjPris>0)html+='<div class="row"><span class="label">Prosjektregnskap</span><span class="val">'+f(d.prosjPris)+' kr/mnd</span></div>';
     if(d.purringPris>0)html+='<div class="row"><span class="label">Purring/inkasso</span><span class="val">'+f(d.purringPris)+' kr/mnd</span></div>';
+    if(d.kursInterntidPris>0)html+='<div class="row"><span class="label">Kurs og avtalt interntid <em style="color:#888;font-style:normal;font-size:.85em">(intern – ikke egen post i tilbudet)</em></span><span class="val">'+f(d.kursInterntidPris)+' kr/mnd</span></div>';
     html+='</div>';
 
     // Lønn
@@ -2737,18 +2864,22 @@ function exportWord(){
 
   // Price table
   html+='<table class="price-table"><thead><tr><th style="width:60%">Tjenester</th><th>Pris</th></tr></thead><tbody>';
-  var regTot=S.bilagPris+S.fakturaPris+S.internTidPris+S.mvaPris+S.omvendtMvaPris+S.prosjPris;
+  var regTot=(S.bilagPris||0)+(S.fakturaPris||0)+(S.internTidPris||0)+(S.kursInterntidPris||0)+(S.mvaPris||0)+(S.omvendtMvaPris||0)+(S.prosjPris||0)+(S.purringPris||0);
   var lonnTot=S.lonnBasis+S.lr+S.sammenstillingMnd+S.ek;
-  var harRegnskap=(S.bilagPris||0)>0;
+  var aarsMndTot=(S.aarsAarlig||0)>0?Math.ceil(S.aarsAarlig/12/10)*10:0;
+  var raadMnd2=(S.rv||0)+(S.sv||0);
+  // Rest av m\u00e5nedsprisen etter \u00e5rsoppgj\u00f8r og r\u00e5dgivning, slik at postene alltid summerer til totalen
+  var avtaltTot=S.mndTot-aarsMndTot-raadMnd2;
+  var harRegnskap=regTot>0;
   var harLonn=lonnTot>0;
   var harKval=(S.kvalMnd||0)>0;
-  if(harRegnskap||harLonn||harKval){
+  if(avtaltTot>0){
     var deler=[];
     if(harRegnskap)deler.push('Regnskapstjenester');
     if(harLonn)deler.push('L\u00f8nnsadministrasjon');
     if(harKval)deler.push('Lovp\u00e5lagt kvalitetsarbeid');
+    if(deler.length===0)deler.push('Regnskapstjenester');
     var avtaltBesk=deler.join('. ')+'.';
-    var avtaltTot=(harRegnskap?regTot:0)+(harLonn?lonnTot:0)+(harKval?S.kvalMnd:0);
     html+='<tr><td>Avtalt tjenesteleveranse<br><span class="small">'+avtaltBesk+'</span></td><td>'+fmt(avtaltTot)+' kr/mnd</td></tr>';
   }
   if(S.aarsAarlig>0){
@@ -2762,11 +2893,9 @@ function exportWord(){
     if(chk('periodiskRapp'))aarsDeler2.push('periodisk rapportering');
     var aarsBesk2=aarsDeler2.length>0?aarsDeler2.join(', '):'\u00e5rsregnskap';
     aarsBesk2=aarsBesk2.charAt(0).toUpperCase()+aarsBesk2.slice(1);
-    var aarsMnd2=Math.ceil(S.aarsAarlig/12/10)*10;
-    html+='<tr><td>\u00c5rsoppgj\u00f8r<br><span class="small">'+aarsBesk2+'</span></td><td>'+fmt(aarsMnd2)+' kr/mnd</td></tr>';
+    html+='<tr><td>\u00c5rsoppgj\u00f8r<br><span class="small">'+aarsBesk2+'</span></td><td>'+fmt(aarsMndTot)+' kr/mnd</td></tr>';
   }
   // Lovp\u00e5lagt kvalitetsarbeid er n\u00e5 inkludert i 'Avtalt tjenesteleveranse'
-  var raadMnd2=(S.rv||0)+(S.sv||0);
   if(raadMnd2>0)html+='<tr><td>R\u00e5dgivning<br><span class="small">\u00d8konomisk r\u00e5dgivning og sparring</span></td><td>'+fmt(raadMnd2)+' kr/mnd</td></tr>';
   html+='</tbody><tfoot><tr><td>Sum l\u00f8pende pr m\u00e5ned</td><td>'+fmt(S.mndTot)+' kr/mnd</td></tr>';
   html+='<tr><td>Estimert \u00e5rspris</td><td>'+fmt(S.mndTot*12)+' kr/\u00e5r</td></tr>';
@@ -2849,7 +2978,7 @@ function buildTilbudData(){
     rabatt:{rabattPct:$('rabattPct').value,rabattMnd:$('rabattMnd').value},
     tilbud:{dato:$('tilbudDato').value,gyldig:$('tilbudGyldig').value,nr:$('tilbudNr').value,utarbeidet:$('tilbudUtarbeidet').value,intro:$('tilbudIntro').value,ekstra:$('tilbudEkstra').value},
     beregnet:{mndTot:S.mndTot,aarTot:S.mndTot*12,eTot:S.eTot,harRabatt:S.harRabatt,rabattVerdi:S.rabattVerdi},
-    _beregnetDetalj:{bilagPris:S.bilagPris,internTidPris:S.internTidPris,fakturaPris:S.fakturaPris,mvaPris:S.mvaPris,omvendtMvaPris:S.omvendtMvaPris,prosjPris:S.prosjPris,purringPris:S.purringPris,lonnBasis:S.lonnBasis,lr:S.lr,sammenstillingMnd:S.sammenstillingMnd,ek:S.ek,aarsAarlig:S.aarsAarlig,aarsMnd:Math.ceil((S.aarsAarlig||0)/12/10)*10,kvalMnd:S.kvalMnd,rv:S.rv,sv:S.sv,mndTot:S.mndTot,eTot:S.eTot,eO:S.eO,eP:S.eP,eS:S.eS,eA:S.eA},
+    _beregnetDetalj:{bilagPris:S.bilagPris,internTidPris:S.internTidPris,kursInterntidPris:S.kursInterntidPris,fakturaPris:S.fakturaPris,mvaPris:S.mvaPris,omvendtMvaPris:S.omvendtMvaPris,prosjPris:S.prosjPris,purringPris:S.purringPris,lonnBasis:S.lonnBasis,lr:S.lr,sammenstillingMnd:S.sammenstillingMnd,ek:S.ek,aarsAarlig:S.aarsAarlig,aarsMnd:Math.ceil((S.aarsAarlig||0)/12/10)*10,kvalMnd:S.kvalMnd,rv:S.rv,sv:S.sv,mndTot:S.mndTot,eTot:S.eTot,eO:S.eO,eP:S.eP,eS:S.eS,eA:S.eA},
     prishistorikk:prishistorikk,
     sisteJustering:sisteJustering
   };
@@ -2990,6 +3119,7 @@ if(_isElectron){
   // Skjul nettleser-backup, vis Electron-backup
   var bs=$('koBackupSection');if(bs)bs.style.display='none';
   var eb=$('koElectronBackup');if(eb)eb.style.display='flex';
+  lastOgBrukPriser();
   window.electronStore.getIndex().then(function(idx){
     _dbCache.idx=idx||[];
     openKundeOversikt();
@@ -3010,7 +3140,7 @@ if(_isElectron){
         var url=exeAsset?exeAsset.browser_download_url:release.html_url;
         var banner=document.createElement('div');
         banner.style.cssText='position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#4a7000,#90D000);color:#fff;padding:.8rem 1.5rem;z-index:100000;display:flex;align-items:center;justify-content:space-between;font-size:.9rem;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.2)';
-        banner.innerHTML='<span>Ny versjon '+latest+' er tilgjengelig! (du har v'+currentVersion+')</span><div style="display:flex;gap:.5rem"><a href="'+url+'" style="background:#fff;color:#4a7000;padding:.4rem 1rem;border-radius:6px;text-decoration:none;font-weight:700;font-size:.85rem" target="_blank">Last ned oppdatering</a><button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:#fff;cursor:pointer;font-size:1.2rem;padding:0 .3rem">&times;</button></div>';
+        banner.innerHTML='<span>Ny versjon '+latest+' er tilgjengelig! (du har v'+currentVersion+')</span><div style="display:flex;gap:.5rem"><a href="'+url+'" style="background:var(--card);color:var(--accent-dark);padding:.4rem 1rem;border-radius:6px;text-decoration:none;font-weight:700;font-size:.85rem" target="_blank">Last ned oppdatering</a><button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:#fff;cursor:pointer;font-size:1.2rem;padding:0 .3rem">&times;</button></div>';
         document.body.appendChild(banner);
       }
     }).catch(function(){});
@@ -3022,17 +3152,20 @@ if(_isElectron){
       var ok=await fsInit();
       if(ok){
         await fsLoadAllToCache();
+        await lastOgBrukPriser();
         await autoBackupFs();
         // Vis filsystem-backup-info i kundeoversikten
         var bs=$('koBackupSection');if(bs)bs.style.display='none';
         var eb=$('koElectronBackup');if(eb)eb.style.display='flex';
         openKundeOversikt();
       }else{
-        // Vis setup-skjerm for å velge mappe
+        // Ingen mappe valgt ennå – bruk eventuelle priser fra localStorage
+        await lastOgBrukPriser();
         document.getElementById('fsSetupScreen').style.display='flex';
       }
     }else{
       // Browser uten File System API → bruk localStorage
+      await lastOgBrukPriser();
       openKundeOversikt();
     }
   })();
