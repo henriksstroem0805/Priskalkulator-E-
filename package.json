@@ -6,6 +6,7 @@
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --win",
+    "protect": "node scripts/protect.js",
     "postinstall": "electron-builder install-app-deps"
   },
   "author": "Eika Økonomi",

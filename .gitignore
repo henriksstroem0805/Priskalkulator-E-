@@ -1,5 +1,4 @@
 *.zip
-encrypt.sh
 .claude/
 node_modules/
 dist/
