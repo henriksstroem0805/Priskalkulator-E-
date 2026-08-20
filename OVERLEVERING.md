@@ -28,9 +28,12 @@ Se `CLAUDE.md` for hvordan koden henger sammen.
    er lesbar for hvem som helst. Auto-oppdateringen henter installeren fra release-siden,
    og et offentlig repo er den enkleste måten å få det til på, men det er en avveining som
    bør tas bevisst.
-4. **Passordet til den beskyttede filen** oppgis muntlig ved overlevering. Det er lagret
-   som SHA-256-hash i låseskjermen i kilden. Skal det byttes, endres hashen i
-   `priskalkulator.html` og filen regenereres med `npm run protect`.
+4. **Passordet til den beskyttede filen** ligger i klartekst som `PASSORD` i
+   `scripts/protect.js`. Det er ikke lagret som hash noe sted – SHA-256 av passordet
+   brukes som XOR-nøkkel når kilden krypteres, og låseskjermen godtar det passordet som
+   gir et lesbart dokument tilbake. Skal det byttes, endres `PASSORD` (eventuelt settes
+   `KALKULATOR_PASSORD`) og filen regenereres med `npm run protect`. Siden repoet er
+   offentlig, er passordet lesbart for hvem som helst – se punkt 3.
 
 ## Utgivelsen ligger bak koden
 

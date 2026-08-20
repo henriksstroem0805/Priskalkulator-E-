@@ -19,7 +19,7 @@ const crypto = require('crypto');
 const ROOT = path.join(__dirname, '..');
 const KILDE = path.join(ROOT, 'priskalkulator.html');
 const BESKYTTET = path.join(ROOT, 'priskalkulator_beskyttet.html');
-const PASSORD = process.env.KALKULATOR_PASSORD || 'Henrik';
+const PASSORD = process.env.KALKULATOR_PASSORD || 'Tilbud';
 
 function xor(buf, key) {
   const ut = Buffer.alloc(buf.length);

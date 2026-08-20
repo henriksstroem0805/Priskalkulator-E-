@@ -20,8 +20,14 @@ npm run protect
 Skriptet bytter ut base64-blobben, dekrypterer resultatet og feiler hvis det ikke er
 byte-identisk med kilden. Commit begge filene sammen.
 
+Passordet lagres ikke som hash noe sted – SHA-256 av det *er* krypteringsnøkkelen, og
+låseskjermen godtar det passordet som gir et dekryptert innhold som inneholder
+`<!DOCTYPE html>`. Skal passordet byttes, endres `PASSORD` i `scripts/protect.js` (eller
+`KALKULATOR_PASSORD` settes) og filen regenereres.
+
 Merk at «beskyttelsen» ikke er reell sikkerhet: kilden ligger i klartekst i samme repo, og
-passordhashen står i låseskjermen. Den stopper en tilfeldig kollega, ikke en som vil inn.
+passordet står i klartekst i `scripts/protect.js`. Den stopper en tilfeldig kollega, ikke en
+som vil inn.
 
 ## Struktur
 
